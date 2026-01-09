@@ -6,8 +6,6 @@
 
 基于 [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) 的 SubLinks 订阅管理客户端
 
-[English](README_EN.md) | 简体中文
-
 </div>
 
 ## ✨ 特性
