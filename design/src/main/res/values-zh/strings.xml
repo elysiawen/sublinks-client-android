@@ -4,7 +4,35 @@
     <string name="about">关于</string>
     <string name="access_control_mode">访问控制模式</string>
     <string name="access_control_packages">访问控制应用包列表</string>
+    <string name="sublinks">SubLinks</string>
+    <string name="auto_sync_startup">启动时自动同步</string>
+    <string name="auto_sync_startup_summary">应用启动时自动同步订阅</string>
     <string name="append_system_dns">追加系统 DNS</string>
+
+    <string name="personalization">个性化</string>
+    <string name="hero_background_type">主页卡片背景</string>
+    <string name="hero_background_value">背景参数</string>
+    <string name="hero_background_value_hint">URL 或 颜色值</string>
+    <string name="browse_image">选择图片</string>
+
+    <string name="bg_type_network">网络图片</string>
+    <string name="bg_type_local">本地图片</string>
+    <string name="bg_type_color">纯色填充</string>
+    <string name="bg_value_network_hint">图片链接 (留空使用随机 API)</string>
+    <string name="bg_value_color_hint">颜色代码 (例如 #FF0000)</string>
+    <string name="browse_image_summary">从设备中选择本地图片</string>
+
+    <string name="color_solid_black">纯色: 黑色</string>
+    <string name="color_solid_white">纯色: 白色</string>
+    <string name="color_solid_red">纯色: 红色</string>
+    <string name="color_solid_green">纯色: 绿色</string>
+    <string name="color_solid_blue">纯色: 蓝色</string>
+    <string name="color_gradient_sunset">渐变: 日落 (Sunset)</string>
+    <string name="color_gradient_ocean">渐变: 海洋 (Ocean)</string>
+    <string name="color_gradient_lush">渐变: 葱郁 (Lush)</string>
+    <string name="color_gradient_cool_blues">渐变: 蓝调 (Cool Blues)</string>
+    <string name="color_custom">自定义 Hex 颜色...</string>
+    <string name="enter_color_code">输入颜色代码</string>
     <string name="application_broken">应用损坏</string>
     <string name="auto_update">自动更新</string>
     <string name="behavior">行为</string>
@@ -97,6 +125,33 @@
     <string name="select_all">全选</string>
     <string name="select_invert">反选</string>
     <string name="select_none">清除</string>
+    <string name="logout">登出</string>
+    <string name="format_logout">登出 (%s)</string>
+    <string name="format_welcome">欢迎，%s！</string>
+    <string name="welcome_guest">欢迎，访客！</string>
+    <string name="hitokoto_loading">一言加载中...</string>
+    <string name="hitokoto_failed">一言加载失败</string>
+    <string name="login_title">SubLinks 登录</string>
+    <string name="login_server_url">API 服务器地址</string>
+    <string name="login_username">用户名</string>
+    <string name="login_password">密码</string>
+    <string name="login_button">登录</string>
+    <string name="login_fill_all">请填写所有字段</string>
+    <string name="login_success">登录成功</string>
+    <string name="login_failed_msg">错误: %s</string>
+    <string name="token_expired">Token 已失效，请重新登录</string>
+
+    <string name="syncing_subscriptions">正在同步订阅...</string>
+    <string name="sync_completed">同步完成</string>
+    <string name="sync_failed">同步失败: %s</string>
+
+    <string name="greeting_early_morning">凌晨好，%s！</string>
+    <string name="greeting_morning">早上好，%s！</string>
+    <string name="greeting_noon">中午好，%s！</string>
+    <string name="greeting_afternoon">下午好，%s！</string>
+    <string name="greeting_evening">晚上好，%s！</string>
+    <string name="greeting_night">夜深了，%s！</string>
+
     <string name="app">应用</string>
     <string name="follow_system_android_10">跟随系统 (Android 10+)</string>
     <string name="always_dark">总是暗黑模式</string>

@@ -1,11 +1,48 @@
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     kotlin("android")
     kotlin("kapt")
     id("com.android.application")
+}
+
+android {
+    defaultConfig {
+        // SUBLINKS_API_URL is defined in buildTypes
+    }
+
+    buildTypes {
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(FileInputStream(localPropertiesFile))
+        }
+
+        getByName("release") {
+            // Read specific key first, fallback to empty if not set
+            val apiUrl = localProperties.getProperty("SUBLINKS_APIURL_RELEASE") ?: ""
+            buildConfigField("String", "SUBLINKS_API_URL", "\"$apiUrl\"")
+        }
+        getByName("debug") {
+            // Read specific key first, fallback to default
+            val apiUrl = localProperties.getProperty("SUBLINKS_APIURL_DEBUG")
+                ?: "http://192.168.1.100:3000/" 
+            buildConfigField("String", "SUBLINKS_API_URL", "\"$apiUrl\"")
+        }
+    }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val abiFilter = output.getFilter(com.android.build.OutputFile.ABI)
+            val abi = abiFilter ?: "universal"
+            output.outputFileName = "SCA-${defaultConfig.versionName}-$abi-${buildType.name}.apk"
+        }
+    }
 }
 
 dependencies {
@@ -26,6 +63,8 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.quickie.bundled)
     implementation(libs.androidx.activity.ktx)
+    implementation(libs.okhttp)
+    implementation(libs.gson)
 }
 
 tasks.getByName("clean", type = Delete::class) {

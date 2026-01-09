@@ -19,10 +19,9 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         OpenProxy,
         OpenProfiles,
         OpenProviders,
-        OpenLogs,
         OpenSettings,
-        OpenHelp,
-        OpenAbout,
+        Logout,
+        RefreshImage,
     }
 
     private val binding = DesignMainBinding
@@ -34,6 +33,35 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
     suspend fun setProfileName(name: String?) {
         withContext(Dispatchers.Main) {
             binding.profileName = name
+        }
+    }
+
+    suspend fun setUsername(name: String?) {
+        withContext(Dispatchers.Main) {
+            binding.username = name
+        }
+    }
+
+    suspend fun setWelcomeMessage(text: String?) {
+        withContext(Dispatchers.Main) {
+            binding.welcomeMessage = text
+        }
+    }
+
+    suspend fun setHitokoto(text: String?) {
+        withContext(Dispatchers.Main) {
+            binding.hitokoto = text
+        }
+    }
+
+    suspend fun setHeroImage(bitmap: android.graphics.Bitmap) {
+        withContext(Dispatchers.Main) {
+            binding.heroImage.alpha = 0f
+            binding.heroImage.setImageBitmap(bitmap)
+            binding.heroImage.animate()
+                .alpha(1f)
+                .setDuration(600)
+                .start()
         }
     }
 

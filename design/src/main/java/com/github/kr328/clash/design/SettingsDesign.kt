@@ -10,7 +10,8 @@ import com.github.kr328.clash.design.util.root
 
 class SettingsDesign(context: Context) : Design<SettingsDesign.Request>(context) {
     enum class Request {
-        StartApp, StartNetwork, StartOverride, StartMetaFeature,
+        StartApp, StartSubLinks, StartNetwork, StartOverride, StartMetaFeature,
+        StartLogs, StartHelp, StartAbout
     }
 
     private val binding = DesignSettingsBinding
@@ -29,5 +30,17 @@ class SettingsDesign(context: Context) : Design<SettingsDesign.Request>(context)
 
     fun request(request: Request) {
         requests.trySend(request)
+    }
+
+    suspend fun showAbout(versionName: String) {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            val binding = com.github.kr328.clash.design.databinding.DesignAboutBinding.inflate(context.layoutInflater).apply {
+                this.versionName = versionName
+            }
+
+            androidx.appcompat.app.AlertDialog.Builder(context)
+                .setView(binding.root)
+                .show()
+        }
     }
 }

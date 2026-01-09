@@ -47,7 +47,7 @@ subprojects {
         defaultConfig {
             if (isApp) {
                 val customApplicationId = queryConfigProperty("custom.application.id") as? String?
-                applicationId = customApplicationId.takeIf { it?.isNotBlank() == true } ?: "com.github.metacubex.clash"
+                applicationId = "xyz.id135150.sublinks"
             }
 
             project.name.let { name ->
@@ -58,8 +58,8 @@ subprojects {
             minSdk = 21
             targetSdk = 35
 
-            versionName = "2.11.21"
-            versionCode = 211021
+            versionName = "1.0.0"
+            versionCode = 10000
 
             resValue("string", "release_name", "v$versionName")
             resValue("integer", "release_code", "$versionCode")
@@ -77,7 +77,7 @@ subprojects {
             if (!isApp) {
                 consumerProguardFiles("consumer-rules.pro")
             } else {
-                setProperty("archivesBaseName", "cmfa-$versionName")
+                setProperty("archivesBaseName", "SCA-$versionName")
             }
         }
 
@@ -108,8 +108,8 @@ subprojects {
 
                 buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
 
-                resValue("string", "launch_name", "@string/launch_name_alpha")
-                resValue("string", "application_name", "@string/application_name_alpha")
+                resValue("string", "launch_name", "SubLinks Client Alpha")
+                resValue("string", "application_name", "SubLinks Client Alpha")
 
                 if (isApp && !removeSuffix) {
                     applicationIdSuffix = ".alpha"
@@ -120,16 +120,16 @@ subprojects {
 
                 dimension = flavorDimensionList[0]
                 if (!removeSuffix) {
-                    versionNameSuffix = ".Meta"
+                    // versionNameSuffix = ".Meta"
                 }
 
                 buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
 
-                resValue("string", "launch_name", "@string/launch_name_meta")
-                resValue("string", "application_name", "@string/application_name_meta")
+                resValue("string", "launch_name", "SubLinks Client")
+                resValue("string", "application_name", "SubLinks Client")
 
                 if (isApp && !removeSuffix) {
-                    applicationIdSuffix = ".meta"
+                    // applicationIdSuffix = ".meta"
                 }
             }
         }

@@ -4,6 +4,7 @@ import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.design.SettingsDesign
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.withContext
 
 class SettingsActivity : BaseActivity<SettingsDesign>() {
     override suspend fun main() {
@@ -20,15 +21,34 @@ class SettingsActivity : BaseActivity<SettingsDesign>() {
                     when (it) {
                         SettingsDesign.Request.StartApp ->
                             startActivity(AppSettingsActivity::class.intent)
+                        SettingsDesign.Request.StartSubLinks ->
+                            startActivity(SubLinksSettingsActivity::class.intent)
                         SettingsDesign.Request.StartNetwork ->
                             startActivity(NetworkSettingsActivity::class.intent)
                         SettingsDesign.Request.StartOverride ->
                             startActivity(OverrideSettingsActivity::class.intent)
                         SettingsDesign.Request.StartMetaFeature ->
                             startActivity(MetaFeatureSettingsActivity::class.intent)
+                        SettingsDesign.Request.StartLogs -> {
+                            if (LogcatService.running) {
+                                startActivity(LogcatActivity::class.intent)
+                            } else {
+                                startActivity(LogsActivity::class.intent)
+                            }
+                        }
+                        SettingsDesign.Request.StartHelp ->
+                            startActivity(HelpActivity::class.intent)
+                        SettingsDesign.Request.StartAbout ->
+                            design.showAbout(queryAppVersionName())
                     }
                 }
             }
+        }
+    }
+
+    private suspend fun queryAppVersionName(): String {
+        return withContext(kotlinx.coroutines.Dispatchers.IO) {
+            packageManager.getPackageInfo(packageName, 0).versionName + "\n" + com.github.kr328.clash.core.bridge.Bridge.nativeCoreVersion().replace("_", "-")
         }
     }
 }

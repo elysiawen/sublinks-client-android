@@ -1,87 +1,163 @@
-## Clash Meta for Android
+# SubLinks Client for Android (SCA)
 
-A Graphical user interface of [Clash.Meta](https://github.com/MetaCubeX/Clash.Meta) for Android
+<div align="center">
 
-### Feature
+[![License](https://img.shields.io/github/license/MetaCubeX/ClashMetaForAndroid)](https://github.com/MetaCubeX/ClashMetaForAndroid/blob/Meta/LICENSE)
 
-Feature of [Clash.Meta](https://github.com/MetaCubeX/Clash.Meta)
+基于 [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) 的 SubLinks 订阅管理客户端
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/com.github.metacubex.clash.meta/)
+[English](README_EN.md) | 简体中文
 
-### Requirement
+</div>
 
-- Android 5.0+ (minimum)
-- Android 7.0+ (recommend)
-- `armeabi-v7a` , `arm64-v8a`, `x86` or `x86_64` Architecture
+## ✨ 特性
 
-### Build
+### 🔐 SubLinks 集成
+- **一键登录**：使用 SubLinks 账号直接登录
+- **自动同步**：订阅配置自动同步到设备
+- **智能管理**：自动处理订阅更新和冲突
 
-1. Update submodules
+### 🎨 个性化定制
+- **Hero 卡片背景**：
+  - 网络图片（随机 API 或自定义 URL）
+  - 本地图片选择
+  - 纯色/渐变色（内置色板 + 自定义）
+- **时段问候**：根据时间显示不同的问候语
+- **一言集成**：每日随机一言展示
 
+### 🚀 核心功能
+- 完整的 Clash Meta 内核支持
+- 规则集管理
+- 配置文件编辑
+- 实时流量监控
+- 延迟测试
+
+## 📱 截图
+
+<div align="center">
+
+| 登录界面 | 主界面 | 个性化设置 |
+|:---:|:---:|:---:|
+| ![Login](screenshots/login.png) | ![Main](screenshots/main.png) | ![Settings](screenshots/settings.png) |
+
+</div>
+
+## 🔧 构建
+
+### 环境要求
+- Android Studio Hedgehog (2023.1.1) 或更高版本
+- JDK 21
+- Android SDK (API 35)
+- Go 1.25+ （用于编译 Clash Meta 内核）
+
+### 配置
+
+1. **克隆仓库**
    ```bash
-   git submodule update --init --recursive
+   git clone https://github.com/elysiawen/sublinks-client-android.git
+   cd sublinks-client-android
    ```
 
-2. Install **OpenJDK 11**, **Android SDK**, **CMake** and **Golang**
-
-3. Create `local.properties` in project root with
-
+2. **配置 API 地址**
+   
+   在项目根目录创建 `local.properties` 文件：
    ```properties
-   sdk.dir=/path/to/android-sdk
+   # SubLinks API 配置
+   SUBLINKS_APIURL_RELEASE=https://your-sublinks-server.com/
+   SUBLINKS_APIURL_DEBUG=http://192.168.1.100:3000/
+   
+   # Android SDK 路径（如果需要）
+   sdk.dir=C\:\\Users\\YourName\\AppData\\Local\\Android\\Sdk
    ```
 
-4. (Optional) Custom app package name. Add the following configuration to `local.properties`.
-
-   ```properties
-   # config your ownn applicationId, or it will be 'com.github.metacubex.clash'
-   custom.application.id=com.my.compile.clash
-   # remove application id suffix, or the applicaion id will be 'com.github.metacubex.clash.alpha'
-   remove.suffix=true
-
-5. Create `signing.properties` in project root with
-
-   ```properties
-   keystore.path=/path/to/keystore/file
-   keystore.password=<key store password>
-   key.alias=<key alias>
-   key.password=<key password>
-   ```
-
-6. Build
-
+3. **生成签名密钥**（可选，用于 Release 构建）
    ```bash
-   ./gradlew app:assembleAlphaRelease
+   keytool -genkey -v -keystore release.keystore -alias key0 -keyalg RSA -keysize 2048 -validity 10000
+   ```
+   
+   创建 `signing.properties`：
+   ```properties
+   keystore.password=your_password
+   key.alias=key0
+   key.password=your_password
    ```
 
-### Automation
+4. **构建**
+   ```bash
+   # Debug 版本
+   ./gradlew assembleMetaDebug
+   
+   # Release 版本
+   ./gradlew assembleMetaRelease
+   ```
 
-APP package name is `com.github.metacubex.clash.meta`
+生成的 APK 位于：`app/build/outputs/apk/meta/release/`
 
-- Toggle Clash.Meta service status
-  - Send intent to activity `com.github.kr328.clash.ExternalControlActivity` with action `com.github.metacubex.clash.meta.action.TOGGLE_CLASH`
-- Start Clash.Meta service
-  - Send intent to activity `com.github.kr328.clash.ExternalControlActivity` with action `com.github.metacubex.clash.meta.action.START_CLASH`
-- Stop Clash.Meta service
-  - Send intent to activity `com.github.kr328.clash.ExternalControlActivity` with action `com.github.metacubex.clash.meta.action.STOP_CLASH`
-- Import a profile
-  - URL Scheme `clash://install-config?url=<encoded URI>` or `clashmeta://install-config?url=<encoded URI>`
+## 🔄 同步上游更新
 
-### Contribution and Project Maintenance
+本项目基于 ClashMetaForAndroid，可以定期同步上游更新：
 
-#### Meta Kernel
+```bash
+# 添加上游仓库（仅需一次）
+git remote add upstream https://github.com/MetaCubeX/ClashMetaForAndroid.git
 
-- CMFA uses the kernel from `android-real` branch under `MetaCubeX/Clash.Meta`, which is a merge of the main `Alpha` branch and `android-open`.
-  - If you want to contribute to the kernel, make PRs to `Alpha` branch of the Meta kernel repository.
-  - If you want to contribute Android-specific patches to the kernel, make PRs to  `android-open` branch of the Meta kernel repository.
+# 同步更新
+git fetch upstream
+git checkout -b sync-upstream-$(date +%Y%m%d)
+git merge upstream/meta
 
-#### Maintenance
+# 解决冲突后
+git checkout meta
+git merge sync-upstream-$(date +%Y%m%d)
+git push origin meta
+```
 
-- When `MetaCubeX/Clash.Meta` kernel is updated to a new version, the `Update Dependencies` actions in this repo will be triggered automatically.
-  - It will pull the new version of the meta kernel, update all the golang dependencies, and create a PR without manual intervention.
-  - If there is any compile error in PR, you need to fix it before merging. Alternatively, you may merge the PR directly.
-- Manually triggering `Build Pre-Release` actions will compile and publish a `PreRelease` version.
-- Manually triggering `Build Release` actions will compile, tag and publish a `Release` version.
-  - You must fill the blank `Release Tag` with the tag you want to release in the format of `v1.2.3`.
-  - `versionName` and `versionCode` in `build.gradle.kts` will be automatically bumped to the tag you filled above.
+详细说明请参考 [上游同步指南](docs/UPSTREAM_SYNC.md)
+
+## 📝 与上游的主要差异
+
+### 修改的文件
+- `build.gradle.kts` - 应用 ID 和版本配置
+- `app/build.gradle.kts` - API URL 配置和 APK 命名
+- `app/src/main/java/com/github/kr328/clash/SubLinksService.kt` - SubLinks API 集成
+- `app/src/main/java/com/github/kr328/clash/LoginActivity.kt` - 登录界面
+- `design/src/main/res/` - UI 资源和字符串
+
+### 新增的功能
+- SubLinks 账号系统集成
+- 订阅自动同步
+- Hero 卡片个性化
+- 时段问候和一言
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+### 开发指南
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
+## 📄 许可证
+
+本项目基于 GPL-3.0 许可证开源，详见 [LICENSE](LICENSE) 文件。
+
+## 🙏 致谢
+
+- [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) - 上游项目
+- [Clash Meta](https://github.com/MetaCubeX/mihomo) - 核心引擎
+- [一言](https://hitokoto.cn/) - 一言 API
+
+## 📮 联系方式
+
+- Issue: [GitHub Issues](https://github.com/elysiawen/sublinks-client-android/issues)
+- Email: your.email@example.com
+
+---
+
+<div align="center">
+
+
+</div>

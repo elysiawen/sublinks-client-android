@@ -23,12 +23,71 @@ import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import com.github.kr328.clash.design.R
+import kotlinx.coroutines.launch
 
 class MainActivity : BaseActivity<MainDesign>() {
     override suspend fun main() {
+        // SubLinks Login Check
+        if (!SubLinksService.isLoggedIn(this)) {
+            startActivity(android.content.Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         val design = MainDesign(this)
 
         setContentDesign(design)
+
+        // Initialize Hero Card
+        design.setUsername(SubLinksService.getUsername(this))
+        design.setWelcomeMessage(SubLinksService.getGreeting(this))
+
+         launch {
+              // Background Sync
+              val skipSync = intent?.getBooleanExtra("skip_sync", false) ?: false
+              val autoSync = com.github.kr328.clash.service.store.SubLinksStore(this@MainActivity).autoSync
+              if (!skipSync) {
+                  try {
+                      if (autoSync) {
+                          withContext(Dispatchers.Main) {
+                              android.widget.Toast.makeText(this@MainActivity, getString(R.string.syncing_subscriptions), android.widget.Toast.LENGTH_SHORT).show()
+                          }
+                          SubLinksService.sync(this@MainActivity) { 
+                               // Silent progress or log
+                          }
+                          withContext(Dispatchers.Main) {
+                              android.widget.Toast.makeText(this@MainActivity, getString(R.string.sync_completed), android.widget.Toast.LENGTH_SHORT).show()
+                          }
+                      } else {
+                          // Just validate token
+                          SubLinksService.fetchSubscriptions(this@MainActivity)
+                      }
+                  } catch (e: SubLinksService.AuthenticationException) {
+                      withContext(Dispatchers.Main) {
+                          android.widget.Toast.makeText(this@MainActivity, getString(R.string.token_expired), android.widget.Toast.LENGTH_LONG).show()
+                      }
+                      SubLinksService.logout(this@MainActivity)
+                      withContext(Dispatchers.Main) {
+                          startActivity(android.content.Intent(this@MainActivity, LoginActivity::class.java))
+                          finish()
+                      }
+                  } catch (e: Exception) {
+                      e.printStackTrace()
+                      withContext(Dispatchers.Main) {
+                          android.widget.Toast.makeText(this@MainActivity, getString(R.string.sync_failed, e.message), android.widget.Toast.LENGTH_LONG).show()
+                      }
+                  }
+              }
+              
+              // Refresh UI after sync
+             design.fetch()
+        }
+
+        launch {
+             // Fetch Hitokoto
+             val hitokoto = SubLinksService.fetchHitokoto()
+             design.setHitokoto(hitokoto ?: getString(R.string.hitokoto_failed))
+        }
 
         design.fetch()
 
@@ -38,7 +97,10 @@ class MainActivity : BaseActivity<MainDesign>() {
             select<Unit> {
                 events.onReceive {
                     when (it) {
-                        Event.ActivityStart,
+                        Event.ActivityStart -> {
+                            design.fetch()
+                            launch { design.updateHeroImage(false) }
+                        }
                         Event.ServiceRecreated,
                         Event.ClashStop, Event.ClashStart,
                         Event.ProfileLoaded, Event.ProfileChanged -> design.fetch()
@@ -59,19 +121,26 @@ class MainActivity : BaseActivity<MainDesign>() {
                             startActivity(ProfilesActivity::class.intent)
                         MainDesign.Request.OpenProviders ->
                             startActivity(ProvidersActivity::class.intent)
-                        MainDesign.Request.OpenLogs -> {
-                            if (LogcatService.running) {
-                                startActivity(LogcatActivity::class.intent)
-                            } else {
-                                startActivity(LogsActivity::class.intent)
-                            }
-                        }
+
                         MainDesign.Request.OpenSettings ->
                             startActivity(SettingsActivity::class.intent)
-                        MainDesign.Request.OpenHelp ->
-                            startActivity(HelpActivity::class.intent)
-                        MainDesign.Request.OpenAbout ->
-                            design.showAbout(queryAppVersionName())
+                        MainDesign.Request.Logout -> {
+                            withProfile {
+                                try {
+                                    queryAll().forEach { delete(it.uuid) }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+                            SubLinksService.logout(this@MainActivity)
+                            startActivity(android.content.Intent(this@MainActivity, LoginActivity::class.java))
+                            finish()
+                        }
+                        MainDesign.Request.RefreshImage -> {
+                            launch {
+                                design.updateHeroImage(true)
+                            }
+                        }
                     }
                 }
                 if (clashRunning) {
@@ -104,6 +173,28 @@ class MainActivity : BaseActivity<MainDesign>() {
     private suspend fun MainDesign.fetchTraffic() {
         withClash {
             setForwarded(queryTrafficTotal())
+        }
+    }
+
+    private var lastHeroProps: Pair<String, String>? = null
+
+    private suspend fun MainDesign.updateHeroImage(force: Boolean = false) {
+        val store = com.github.kr328.clash.service.store.SubLinksStore(this@MainActivity)
+        val type = store.heroBackgroundType
+        val value = when(type) {
+             "network", "url", "api" -> store.heroNetworkUrl
+             "local" -> store.heroLocalUri
+             "color" -> store.heroColorCode
+             else -> ""
+        }
+        val currentProps = type to value
+
+        if (force || currentProps != lastHeroProps) {
+            lastHeroProps = currentProps
+            val bitmap = SubLinksService.fetchRandomImage(this@MainActivity)
+            if (bitmap != null) {
+                setHeroImage(bitmap)
+            }
         }
     }
 
@@ -143,8 +234,10 @@ class MainActivity : BaseActivity<MainDesign>() {
         }
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val requestPermissionLauncher =
                 registerForActivityResult(RequestPermission()

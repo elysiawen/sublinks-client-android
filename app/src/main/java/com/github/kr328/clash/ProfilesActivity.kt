@@ -56,6 +56,20 @@ class ProfilesActivity : BaseActivity<ProfilesDesign>() {
                                     }
                                 }
                             }
+                        ProfilesDesign.Request.Sync -> {
+                            launch {
+                                try {
+                                    design.showToast(getString(R.string.syncing_subscriptions), ToastDuration.Short)
+                                    SubLinksService.sync(this@ProfilesActivity) {
+                                        // Silent progress
+                                    }
+                                    design.showToast(getString(R.string.sync_completed), ToastDuration.Short)
+                                    design.fetch() // Refresh list after sync
+                                } catch (e: Exception) {
+                                    design.showToast(getString(R.string.sync_failed, e.message), ToastDuration.Long)
+                                }
+                            }
+                        }
                         is ProfilesDesign.Request.Update ->
                             withProfile { update(it.profile.uuid) }
                         is ProfilesDesign.Request.Delete ->

@@ -28,6 +28,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/BootstrapTheme"
+        android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="N">
         <meta-data
@@ -36,6 +37,15 @@
         <meta-data
             android:name="releaseCode"
             android:value="@integer/release_code" />
+
+
+        <activity
+            android:name=".LoginActivity"
+            android:configChanges="uiMode"
+            android:exported="false"
+            android:label="Login"
+            android:theme="@style/BootstrapTheme"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".MainActivity"
@@ -152,6 +162,11 @@
             android:configChanges="uiMode"
             android:exported="false"
             android:label="@string/app" />
+        <activity
+            android:name=".SubLinksSettingsActivity"
+            android:configChanges="uiMode"
+            android:exported="false"
+            android:label="@string/sublinks" />
         <activity
             android:name=".OverrideSettingsActivity"
             android:configChanges="uiMode"

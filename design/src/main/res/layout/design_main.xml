@@ -26,6 +26,15 @@
         <variable
             name="hasProviders"
             type="boolean" />
+        <variable
+            name="username"
+            type="String" />
+        <variable
+            name="welcomeMessage"
+            type="String" />
+        <variable
+            name="hitokoto"
+            type="String" />
 
         <import type="android.view.View" />
         <import type="com.github.kr328.clash.design.MainDesign.Request" />
@@ -63,11 +72,11 @@
                         android:layout_width="@dimen/large_item_header_layout_size"
                         android:layout_height="@dimen/large_item_header_layout_size">
 
-                        <View
+                        <ImageView
                             android:layout_width="@dimen/main_logo_size"
                             android:layout_height="@dimen/main_logo_size"
                             android:layout_gravity="center"
-                            android:background="@drawable/ic_clash" />
+                            android:src="@drawable/ic_logo" />
                     </FrameLayout>
 
                     <TextView
@@ -76,6 +85,74 @@
                         android:text="@string/application_name"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
                 </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:layout_marginBottom="@dimen/main_card_margin_vertical"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_hero_gradient" />
+
+                    <ImageView
+                        android:id="@+id/hero_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#60000000"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{welcomeMessage ?? @string/welcome_guest}"
+                            android:textColor="@android:color/white"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:shadowColor="#FF000000"
+                            android:shadowRadius="5"
+                            android:shadowDx="2"
+                            android:shadowDy="2"
+                            android:layout_marginBottom="8dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{hitokoto ?? @string/hitokoto_loading}"
+                            android:textColor="@android:color/white"
+                            android:textSize="14sp"
+                            android:maxLines="2"
+                            android:shadowColor="#FF000000"
+                            android:shadowRadius="5"
+                            android:shadowDx="2"
+                            android:shadowDy="2"
+                            android:ellipsize="end"/>
+                    </LinearLayout>
+
+                    <ImageButton
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="8dp"
+                        android:background="?selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_baseline_sync"
+                        android:onClick="@{() -> self.request(Request.RefreshImage)}"
+                        app:tint="@android:color/white" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <com.github.kr328.clash.design.view.LargeActionCard
                     android:layout_width="match_parent"
@@ -120,14 +197,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/main_label_margin_vertical"
-                    android:onClick="@{() -> self.request(Request.OpenLogs)}"
-                    app:icon="@drawable/ic_baseline_assignment"
-                    app:text="@string/logs" />
-
-                <com.github.kr328.clash.design.view.LargeActionLabel
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/main_label_margin_vertical"
                     android:onClick="@{() -> self.request(Request.OpenSettings)}"
                     app:icon="@drawable/ic_baseline_settings"
                     app:text="@string/settings" />
@@ -136,17 +205,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/main_label_margin_vertical"
-                    android:onClick="@{() -> self.request(Request.OpenHelp)}"
-                    app:icon="@drawable/ic_baseline_help_center"
-                    app:text="@string/help" />
-
-                <com.github.kr328.clash.design.view.LargeActionLabel
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/main_label_margin_vertical"
-                    android:onClick="@{() -> self.request(Request.OpenAbout)}"
-                    app:icon="@drawable/ic_baseline_info"
-                    app:text="@string/about" />
+                    android:onClick="@{() -> self.request(Request.Logout)}"
+                    app:icon="@drawable/ic_baseline_exit_to_app"
+                    app:text="@{username != null ? @string/format_logout(username) : @string/logout}" />
             </LinearLayout>
         </ScrollView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

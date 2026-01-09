@@ -38,6 +38,13 @@
                 <com.github.kr328.clash.design.view.ActionLabel
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:onClick="@{() -> self.request(Request.StartSubLinks)}"
+                    app:icon="@drawable/ic_baseline_sync"
+                    app:text="@string/sublinks" />
+
+                <com.github.kr328.clash.design.view.ActionLabel
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:onClick="@{() -> self.request(Request.StartNetwork)}"
                     app:icon="@drawable/ic_baseline_dns"
                     app:text="@string/network" />
@@ -55,6 +62,26 @@
                     android:onClick="@{() -> self.request(Request.StartMetaFeature)}"
                     app:icon="@drawable/ic_baseline_meta"
                     app:text="@string/meta_features" />
+                <com.github.kr328.clash.design.view.ActionLabel
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{() -> self.request(Request.StartLogs)}"
+                    app:icon="@drawable/ic_baseline_assignment"
+                    app:text="@string/logs" />
+
+                <com.github.kr328.clash.design.view.ActionLabel
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{() -> self.request(Request.StartHelp)}"
+                    app:icon="@drawable/ic_baseline_help_center"
+                    app:text="@string/help" />
+
+                <com.github.kr328.clash.design.view.ActionLabel
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{() -> self.request(Request.StartAbout)}"
+                    app:icon="@drawable/ic_baseline_info"
+                    app:text="@string/about" />
 
             </LinearLayout>
         </com.github.kr328.clash.design.view.ObservableScrollView>
