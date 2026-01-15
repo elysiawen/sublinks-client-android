@@ -16,6 +16,7 @@ object SubLinksService {
     private val gson = Gson()
     private const val PREFS_NAME = "sublinks_prefs"
     private const val KEY_TOKEN = "jwt_token"
+    private const val KEY_REFRESH_TOKEN = "jwt_refresh_token"
     private const val KEY_SERVER = "server_url"
     private const val KEY_USER = "user_info"
     private val USER_AGENT = "SubLinks Client Android/${BuildConfig.VERSION_NAME}"
@@ -23,7 +24,9 @@ object SubLinksService {
     @androidx.annotation.Keep
     data class LoginRequest(val username: String, val password: String)
     @androidx.annotation.Keep
-    data class LoginResponse(val token: String?, val accessToken: String?, val access_token: String?, val user: Any?, val error: String?)
+    data class LoginResponse(val token: String?, val accessToken: String?, val access_token: String?, val refreshToken: String?, val user: Any?, val error: String?)
+    @androidx.annotation.Keep
+    data class RefreshResponse(val accessToken: String?, val access_token: String?, val error: String?)
     @androidx.annotation.Keep
     data class Subscription(val name: String, val url: String)
     @androidx.annotation.Keep
@@ -77,11 +80,13 @@ object SubLinksService {
                 loginResponse ?: throw IOException("Invalid JSON response")
                 
                 val token = loginResponse.token ?: loginResponse.accessToken ?: loginResponse.access_token
+                val refreshToken = loginResponse.refreshToken
                 
                 if (token != null) {
                     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                     prefs.edit()
                         .putString(KEY_TOKEN, token)
+                        .putString(KEY_REFRESH_TOKEN, refreshToken)
                         .putString(KEY_SERVER, cleanUrl)
                         .putString(KEY_USER, gson.toJson(loginResponse.user))
                         .apply()
@@ -92,6 +97,50 @@ object SubLinksService {
             } catch (e: Exception) {
                 e.printStackTrace()
                 e.message ?: "Unknown error"
+            }
+        }
+    }
+
+    suspend fun refreshAccessToken(context: Context): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                val refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null) 
+                    ?: return@withContext false
+                val serverUrl = getServerUrl(context) ?: return@withContext false
+                
+                val url = "$serverUrl/api/client/auth/refresh"
+                val json = gson.toJson(mapOf("refreshToken" to refreshToken))
+                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+                
+                val request = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", USER_AGENT)
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string() ?: return@withContext false
+                
+                if (!response.isSuccessful) {
+                    // Refresh token also expired, need to re-login
+                    return@withContext false
+                }
+                
+                val refreshResponse = gson.fromJson(responseBody, RefreshResponse::class.java)
+                val newToken = refreshResponse.accessToken ?: refreshResponse.access_token
+                
+                if (newToken != null) {
+                    prefs.edit()
+                        .putString(KEY_TOKEN, newToken)
+                        .apply()
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
             }
         }
     }
@@ -112,11 +161,27 @@ object SubLinksService {
                 .get()
                 .build()
 
-            val response = client.newCall(request).execute()
-            if (!response.isSuccessful) {
-                if (response.code == 401 || response.code == 403) {
-                    throw AuthenticationException("Authentication failed: HTTP ${response.code}")
+            var response = client.newCall(request).execute()
+            
+            // If 401, try to refresh token and retry
+            if (response.code == 401 || response.code == 403) {
+                val refreshed = refreshAccessToken(context)
+                if (refreshed) {
+                    // Retry with new token
+                    val newToken = getToken(context) ?: throw AuthenticationException("Token refresh failed")
+                    val retryRequest = Request.Builder()
+                        .url(url)
+                        .header("Authorization", "Bearer $newToken")
+                        .header("User-Agent", USER_AGENT)
+                        .get()
+                        .build()
+                    response = client.newCall(retryRequest).execute()
+                } else {
+                    throw AuthenticationException("Authentication failed: Token expired")
                 }
+            }
+            
+            if (!response.isSuccessful) {
                 throw IOException("Fetch failed: HTTP ${response.code}")
             }
 
