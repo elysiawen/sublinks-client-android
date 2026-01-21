@@ -22,7 +22,7 @@ object SubLinksService {
     private val USER_AGENT = "SubLinks Client Android/${BuildConfig.VERSION_NAME}"
 
     @androidx.annotation.Keep
-    data class LoginRequest(val username: String, val password: String)
+    data class LoginRequest(val username: String, val password: String, val deviceInfo: String? = null)
     @androidx.annotation.Keep
     data class LoginResponse(val token: String?, val accessToken: String?, val access_token: String?, val refreshToken: String?, val user: Any?, val error: String?)
     @androidx.annotation.Keep
@@ -53,7 +53,8 @@ object SubLinksService {
                 val cleanUrl = serverUrl.trim().removeSuffix("/")
                 val url = "$cleanUrl/api/client/auth/login"
                 
-                val json = gson.toJson(LoginRequest(username, password))
+                val deviceInfo = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})"
+                val json = gson.toJson(LoginRequest(username, password, deviceInfo))
                 val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
@@ -203,8 +204,34 @@ object SubLinksService {
             if (element.isJsonObject) {
                 // Try fetching "username" first, fallback to "sub_links_user" etc if structure varies
                 val obj = element.asJsonObject
-                if (obj.has("username")) obj.get("username").asString
-                else "User"
+                if (obj.has("nickname") && !obj.get("nickname").isJsonNull && obj.get("nickname").asString.isNotEmpty()) {
+                    obj.get("nickname").asString
+                } else if (obj.has("username")) {
+                    obj.get("username").asString
+                } else {
+                    "User"
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun getAvatar(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val userJson = prefs.getString(KEY_USER, null) ?: return null
+        return try {
+            val element = com.google.gson.JsonParser.parseString(userJson)
+            if (element.isJsonObject) {
+                val obj = element.asJsonObject
+                if (obj.has("avatar") && !obj.get("avatar").isJsonNull) {
+                    obj.get("avatar").asString
+                } else {
+                    null
+                }
             } else {
                 null
             }
@@ -216,6 +243,61 @@ object SubLinksService {
 
     @androidx.annotation.Keep
     data class HitokotoResponse(val hitokoto: String, val from: String)
+
+    suspend fun fetchUserInfo(context: Context): Boolean {
+        return withContext(Dispatchers.IO) {
+            val token = getToken(context) ?: return@withContext false
+            val serverUrl = getServerUrl(context) ?: return@withContext false
+
+            val url = "$serverUrl/api/client/auth/user"
+
+            val request = Request.Builder()
+                .url(url)
+                .header("Authorization", "Bearer $token")
+                .header("User-Agent", USER_AGENT)
+                .get()
+                .build()
+
+            var response = client.newCall(request).execute()
+
+            if (response.code == 401 || response.code == 403) {
+                if (refreshAccessToken(context)) {
+                    val newToken = getToken(context) ?: return@withContext false
+                    val retryRequest = request.newBuilder()
+                        .header("Authorization", "Bearer $newToken")
+                        .build()
+                    response = client.newCall(retryRequest).execute()
+                } else {
+                    throw AuthenticationException("Token expired")
+                }
+            }
+
+            if (response.isSuccessful) {
+                val body = response.body?.string()
+                if (!body.isNullOrEmpty()) {
+                    // Validate JSON
+                    try {
+                        val element = com.google.gson.JsonParser.parseString(body)
+                        if (element.isJsonObject) {
+                             val obj = element.asJsonObject
+                             val userToSave = if (obj.has("user") && obj.get("user").isJsonObject) {
+                                 obj.get("user").toString()
+                             } else {
+                                 body
+                             }
+                             
+                             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                             prefs.edit().putString(KEY_USER, userToSave).apply()
+                             return@withContext true
+                        }
+                    } catch (e: Exception) {
+                        // Ignore invalid JSON
+                    }
+                }
+            }
+            false
+        }
+    }
 
     suspend fun fetchHitokoto(): String? {
         return withContext(Dispatchers.IO) {
@@ -315,6 +397,30 @@ object SubLinksService {
     suspend fun logout(context: Context) {
         withContext(Dispatchers.IO) {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null)
+            val serverUrl = getServerUrl(context)
+
+            // Attempt to notify server about logout
+            if (refreshToken != null && serverUrl != null) {
+                try {
+                    val url = "$serverUrl/api/client/auth/logout"
+                    val json = gson.toJson(mapOf("refreshToken" to refreshToken))
+                    val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+                    
+                    val request = Request.Builder()
+                        .url(url)
+                        .header("User-Agent", USER_AGENT)
+                        .post(body)
+                        .build()
+
+                    // We ignore the result as the user requested to clear local data regardless
+                    client.newCall(request).execute().use { _ -> }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            // Always clear local data
             prefs.edit().clear().apply()
 
             try {
@@ -330,6 +436,7 @@ object SubLinksService {
             }
         }
     }
+
     fun getGreeting(context: Context): String {
         val username = getUsername(context) ?: "User"
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)

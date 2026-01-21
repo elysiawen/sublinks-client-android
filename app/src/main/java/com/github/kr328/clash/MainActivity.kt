@@ -38,8 +38,11 @@ class MainActivity : BaseActivity<MainDesign>() {
 
         setContentDesign(design)
 
+        launch { design.updateHeroImage() }
+
         // Initialize Hero Card
         design.setUsername(SubLinksService.getUsername(this))
+        design.setAvatar(SubLinksService.getAvatar(this))
         design.setWelcomeMessage(SubLinksService.getGreeting(this))
 
          launch {
@@ -58,9 +61,12 @@ class MainActivity : BaseActivity<MainDesign>() {
                           withContext(Dispatchers.Main) {
                               android.widget.Toast.makeText(this@MainActivity, getString(R.string.sync_completed), android.widget.Toast.LENGTH_SHORT).show()
                           }
-                      } else {
-                          // Just validate token
-                          SubLinksService.fetchSubscriptions(this@MainActivity)
+                      }
+                      
+                      // Refresh user info
+                      if (SubLinksService.fetchUserInfo(this@MainActivity)) {
+                          design.setUsername(SubLinksService.getUsername(this@MainActivity))
+                          design.setAvatar(SubLinksService.getAvatar(this@MainActivity))
                       }
                   } catch (e: SubLinksService.AuthenticationException) {
                       withContext(Dispatchers.Main) {
@@ -177,9 +183,13 @@ class MainActivity : BaseActivity<MainDesign>() {
     }
 
     private var lastHeroProps: Pair<String, String>? = null
+    private var rawHeroBitmap: android.graphics.Bitmap? = null
+    private var lastBlurRadius: Int = -1
 
     private suspend fun MainDesign.updateHeroImage(force: Boolean = false) {
         val store = com.github.kr328.clash.service.store.SubLinksStore(this@MainActivity)
+        val uiStore = com.github.kr328.clash.design.store.UiStore(this@MainActivity)
+        
         val type = store.heroBackgroundType
         val value = when(type) {
              "network", "url", "api" -> store.heroNetworkUrl
@@ -187,13 +197,40 @@ class MainActivity : BaseActivity<MainDesign>() {
              "color" -> store.heroColorCode
              else -> ""
         }
+        
         val currentProps = type to value
+        val blurRadius = uiStore.mainCardBlurRadius
+        
+        val showMainCard = uiStore.showMainCard
+        val showAvatar = uiStore.showMainCardAvatar
+        val showWelcome = uiStore.showMainCardWelcome
+        val showHitokoto = uiStore.showMainCardHitokoto
+        val showRefresh = uiStore.showMainCardRefresh
+        
+        updateCardVisibility(showMainCard, showAvatar, showWelcome, showHitokoto, showRefresh)
+        
+        if (!showMainCard) return
+
+        var bitmapChanged = false
 
         if (force || currentProps != lastHeroProps) {
             lastHeroProps = currentProps
-            val bitmap = SubLinksService.fetchRandomImage(this@MainActivity)
-            if (bitmap != null) {
-                setHeroImage(bitmap)
+            val fetched = SubLinksService.fetchRandomImage(this@MainActivity)
+            if (fetched != null) {
+                rawHeroBitmap = fetched
+                bitmapChanged = true
+            }
+        }
+        
+        if (rawHeroBitmap != null) {
+            if (bitmapChanged || blurRadius != lastBlurRadius) {
+                lastBlurRadius = blurRadius
+                val finalBitmap = if (blurRadius > 0) {
+                     com.github.kr328.clash.util.BlurUtils.fastblur(rawHeroBitmap!!, 0.5f, blurRadius) ?: rawHeroBitmap!!
+                } else {
+                     rawHeroBitmap!!
+                }
+                setHeroImage(finalBitmap)
             }
         }
     }

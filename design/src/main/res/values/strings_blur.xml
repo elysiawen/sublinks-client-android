@@ -1,0 +1,9 @@
+<resources>
+    <string name="main_card_blur_radius">Hero Card Blur Radius</string>
+    <string name="main_card_blur_summary">Set Gaussian blur radius for hero card (0-25)</string>
+    <string name="main_card_visible">Show Info Card</string>
+    <string name="main_card_avatar_visible">Show Avatar</string>
+    <string name="main_card_welcome_visible">Show Welcome Message</string>
+    <string name="main_card_hitokoto_visible">Show Hitokoto</string>
+    <string name="main_card_refresh_visible">Show Refresh Button</string>
+</resources>

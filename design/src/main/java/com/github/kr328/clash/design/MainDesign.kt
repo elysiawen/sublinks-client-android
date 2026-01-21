@@ -12,6 +12,7 @@ import com.github.kr328.clash.design.util.resolveThemedColor
 import com.github.kr328.clash.design.util.root
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import coil.load
 
 class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
     enum class Request {
@@ -39,6 +40,18 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
     suspend fun setUsername(name: String?) {
         withContext(Dispatchers.Main) {
             binding.username = name
+        }
+    }
+
+
+    suspend fun setAvatar(url: String?) {
+        withContext(Dispatchers.Main) {
+            binding.selfAvatar.load(url) {
+                placeholder(R.drawable.ic_baseline_person)
+                error(R.drawable.ic_baseline_person)
+                fallback(R.drawable.ic_baseline_person)
+                crossfade(true)
+            }
         }
     }
 
@@ -103,6 +116,22 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
             AlertDialog.Builder(context)
                 .setView(binding.root)
                 .show()
+        }
+    }
+
+    suspend fun updateCardVisibility(
+        showCard: Boolean,
+        showAvatar: Boolean,
+        showWelcome: Boolean,
+        showHitokoto: Boolean,
+        showRefresh: Boolean
+    ) {
+        withContext(Dispatchers.Main) {
+             binding.mainCardView.visibility = if (showCard) View.VISIBLE else View.GONE
+             binding.selfAvatar.visibility = if (showAvatar) View.VISIBLE else View.GONE
+             binding.welcomeTextView.visibility = if (showWelcome) View.VISIBLE else View.GONE
+             binding.hitokotoTextView.visibility = if (showHitokoto) View.VISIBLE else View.GONE
+             binding.heroRefreshButton.visibility = if (showRefresh) View.VISIBLE else View.GONE
         }
     }
 

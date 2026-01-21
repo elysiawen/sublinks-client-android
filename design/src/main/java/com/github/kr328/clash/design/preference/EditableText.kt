@@ -13,6 +13,7 @@ interface EditableTextPreference : ClickablePreference {
     var placeholder: CharSequence?
     var empty: CharSequence?
     var text: String?
+    var listener: OnChangedListener?
 }
 
 fun <T> PreferenceScreen.editableText(
@@ -27,6 +28,7 @@ fun <T> PreferenceScreen.editableText(
     val impl = object : EditableTextPreference, ClickablePreference by clickable(title, icon) {
         override var placeholder: CharSequence? = null
         override var empty: CharSequence? = null
+        override var listener: OnChangedListener? = null
         override var text: String? = null
             set(value) {
                 field = value
@@ -74,6 +76,7 @@ fun <T> PreferenceScreen.editableText(
                 }
 
                 impl.text = adapter.from(newValue)
+                impl.listener?.onChanged()
             }
         }
     }

@@ -66,6 +66,8 @@ class AppSettingsDesign(
                 }
             }
 
+
+
             switch(
                 value = uiStore::hideAppIcon,
                 icon = R.drawable.ic_baseline_hide,

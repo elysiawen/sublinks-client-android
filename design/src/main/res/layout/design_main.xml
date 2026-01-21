@@ -84,11 +84,18 @@
                         android:layout_height="wrap_content"
                         android:text="@string/application_name"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
                 </LinearLayout>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/main_card_view"
                     android:layout_width="match_parent"
                     android:layout_height="160dp"
+                    android:visibility="gone"
                     android:layout_marginBottom="@dimen/main_card_margin_vertical"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp">
@@ -112,38 +119,58 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="vertical"
+                        android:orientation="horizontal"
                         android:padding="16dp"
                         android:gravity="center_vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@{welcomeMessage ?? @string/welcome_guest}"
-                            android:textColor="@android:color/white"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:shadowColor="#FF000000"
-                            android:shadowRadius="5"
-                            android:shadowDx="2"
-                            android:shadowDy="2"
-                            android:layout_marginBottom="8dp"/>
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/self_avatar"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:scaleType="centerCrop"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                            android:visibility="gone"
+                            tools:visibility="visible"
+                            android:layout_marginEnd="16dp"
+                            xmlns:tools="http://schemas.android.com/tools"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@{hitokoto ?? @string/hitokoto_loading}"
-                            android:textColor="@android:color/white"
-                            android:textSize="14sp"
-                            android:maxLines="2"
-                            android:shadowColor="#FF000000"
-                            android:shadowRadius="5"
-                            android:shadowDx="2"
-                            android:shadowDy="2"
-                            android:ellipsize="end"/>
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/welcome_text_view"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{welcomeMessage ?? @string/welcome_guest}"
+                                android:textColor="@android:color/white"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:shadowColor="#FF000000"
+                                android:shadowRadius="5"
+                                android:shadowDx="2"
+                                android:shadowDy="2"
+                                android:layout_marginBottom="8dp"/>
+
+                            <TextView
+                                android:id="@+id/hitokoto_text_view"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{hitokoto ?? @string/hitokoto_loading}"
+                                android:textColor="@android:color/white"
+                                android:textSize="14sp"
+                                android:maxLines="2"
+                                android:shadowColor="#FF000000"
+                                android:shadowRadius="5"
+                                android:shadowDx="2"
+                                android:shadowDy="2"
+                                android:ellipsize="end"/>
+                        </LinearLayout>
                     </LinearLayout>
 
                     <ImageButton
+                        android:id="@+id/hero_refresh_button"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_gravity="bottom|end"

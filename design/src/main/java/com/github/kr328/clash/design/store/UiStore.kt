@@ -67,6 +67,36 @@ class UiStore(context: Context) {
         defaultValue = false,
     )
 
+    var mainCardBlurRadius: Int by store.int(
+        key = "main_card_blur_radius",
+        defaultValue = 20
+    )
+
+    var showMainCard: Boolean by store.boolean(
+        key = "show_main_card",
+        defaultValue = true
+    )
+
+    var showMainCardAvatar: Boolean by store.boolean(
+        key = "show_main_card_avatar",
+        defaultValue = true
+    )
+
+    var showMainCardWelcome: Boolean by store.boolean(
+        key = "show_main_card_welcome",
+        defaultValue = true
+    )
+
+    var showMainCardHitokoto: Boolean by store.boolean(
+        key = "show_main_card_hitokoto",
+        defaultValue = true
+    )
+
+    var showMainCardRefresh: Boolean by store.boolean(
+        key = "show_main_card_refresh",
+        defaultValue = true
+    )
+
     companion object {
         private const val PREFERENCE_NAME = "ui"
     }
