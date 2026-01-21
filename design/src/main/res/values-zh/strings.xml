@@ -126,6 +126,11 @@
     <string name="select_invert">反选</string>
     <string name="select_none">清除</string>
     <string name="logout">登出</string>
+    <string name="logout_confirmation_title">确认登出</string>
+    <string name="logout_confirmation_message">确定要登出当前账号吗？</string>
+    <string name="logging_out">正在登出...</string>
+    <string name="logout_success">登出成功</string>
+    <string name="logout_failed">登出失败：%s</string>
     <string name="format_logout">登出 (%s)</string>
     <string name="format_welcome">欢迎，%s！</string>
     <string name="welcome_guest">欢迎，访客！</string>
@@ -315,4 +320,13 @@
     <string name="external_control_stopped">Clash.Meta 服务已停止</string>
     <string name="import_from_qr_no_permission">相机权限受限，请前往设置开启。</string>
     <string name="import_from_qr_exception">发生系统未知异常，操作失败。</string>
+
+    <!-- Blur Settings -->
+    <string name="main_card_blur_radius">卡片高斯模糊半径</string>
+    <string name="main_card_blur_summary">设置首页卡片的高斯模糊半径 (0-25)</string>
+    <string name="main_card_visible">显示主页信息卡片</string>
+    <string name="main_card_avatar_visible">显示头像</string>
+    <string name="main_card_welcome_visible">显示欢迎语</string>
+    <string name="main_card_hitokoto_visible">显示每日一言</string>
+    <string name="main_card_refresh_visible">显示刷新按钮</string>
 </resources>

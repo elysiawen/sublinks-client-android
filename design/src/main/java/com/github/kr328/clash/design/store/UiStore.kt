@@ -97,16 +97,6 @@ class UiStore(context: Context) {
         defaultValue = true
     )
 
-    var enableDynamicNotification: Boolean by store.boolean(
-        key = "enable_dynamic_notification",
-        defaultValue = false
-    )
-
-    var dynamicNotificationInterval: Int by store.int(
-        key = "dynamic_notification_interval",
-        defaultValue = 5
-    )
-
     companion object {
         private const val PREFERENCE_NAME = "ui"
     }

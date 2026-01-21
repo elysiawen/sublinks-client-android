@@ -35,6 +35,25 @@
         <variable
             name="hitokoto"
             type="String" />
+        <variable
+            name="avatarUrl"
+            type="String" />
+
+        <variable
+            name="showMainCard"
+            type="boolean" />
+        <variable
+            name="showMainCardAvatar"
+            type="boolean" />
+        <variable
+            name="showMainCardWelcome"
+            type="boolean" />
+        <variable
+            name="showMainCardHitokoto"
+            type="boolean" />
+        <variable
+            name="showMainCardRefresh"
+            type="boolean" />
 
         <import type="android.view.View" />
         <import type="com.github.kr328.clash.design.MainDesign.Request" />
@@ -95,7 +114,7 @@
                     android:id="@+id/main_card_view"
                     android:layout_width="match_parent"
                     android:layout_height="160dp"
-                    android:visibility="gone"
+                    android:visibility="@{showMainCard ? View.VISIBLE : View.GONE}"
                     android:layout_marginBottom="@dimen/main_card_margin_vertical"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp">
@@ -129,7 +148,7 @@
                             android:layout_height="56dp"
                             android:scaleType="centerCrop"
                             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-                            android:visibility="gone"
+                            android:visibility='@{(showMainCardAvatar &amp;&amp; avatarUrl != null &amp;&amp; !avatarUrl.empty) ? View.VISIBLE : View.GONE}'
                             tools:visibility="visible"
                             android:layout_marginEnd="16dp"
                             xmlns:tools="http://schemas.android.com/tools"/>
@@ -143,6 +162,7 @@
                                 android:id="@+id/welcome_text_view"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:visibility="@{showMainCardWelcome ? View.VISIBLE : View.GONE}"
                                 android:text="@{welcomeMessage ?? @string/welcome_guest}"
                                 android:textColor="@android:color/white"
                                 android:textSize="22sp"
@@ -157,6 +177,7 @@
                                 android:id="@+id/hitokoto_text_view"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:visibility="@{showMainCardHitokoto ? View.VISIBLE : View.GONE}"
                                 android:text="@{hitokoto ?? @string/hitokoto_loading}"
                                 android:textColor="@android:color/white"
                                 android:textSize="14sp"
@@ -174,6 +195,7 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_gravity="bottom|end"
+                        android:visibility="@{showMainCardRefresh ? View.VISIBLE : View.GONE}"
                         android:layout_margin="8dp"
                         android:background="?selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_baseline_sync"

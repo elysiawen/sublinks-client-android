@@ -1,9 +1,0 @@
-<resources>
-    <string name="main_card_blur_radius">卡片高斯模糊半径</string>
-    <string name="main_card_blur_summary">设置首页卡片的高斯模糊半径 (0-25)</string>
-    <string name="main_card_visible">显示主页信息卡片</string>
-    <string name="main_card_avatar_visible">显示头像</string>
-    <string name="main_card_welcome_visible">显示欢迎语</string>
-    <string name="main_card_hitokoto_visible">显示每日一言</string>
-    <string name="main_card_refresh_visible">显示刷新按钮</string>
-</resources>

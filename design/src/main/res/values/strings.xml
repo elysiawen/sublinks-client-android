@@ -127,6 +127,11 @@
     <string name="reset">Reset</string>
 
     <string name="logout">Logout</string>
+    <string name="logout_confirmation_title">Confirm Logout</string>
+    <string name="logout_confirmation_message">Are you sure you want to log out?</string>
+    <string name="logging_out">Logging out...</string>
+    <string name="logout_success">Successfully logged out</string>
+    <string name="logout_failed">Logout failed: %s</string>
     <string name="format_logout">Logout (%s)</string>
     <string name="format_welcome">Welcome back, %s!</string>
     <string name="welcome_guest">Welcome, Guest!</string>

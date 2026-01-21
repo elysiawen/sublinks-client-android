@@ -28,6 +28,8 @@ object SubLinksService {
     @androidx.annotation.Keep
     data class RefreshResponse(val accessToken: String?, val access_token: String?, val error: String?)
     @androidx.annotation.Keep
+    data class LogoutResponse(val success: Boolean, val message: String?)
+    @androidx.annotation.Keep
     data class Subscription(val name: String, val url: String)
     @androidx.annotation.Keep
     data class SubscriptionsResponse(val subscriptions: List<Subscription>)
@@ -394,16 +396,20 @@ object SubLinksService {
         }
     }
 
-    suspend fun logout(context: Context) {
-        withContext(Dispatchers.IO) {
+    suspend fun logout(context: Context): Pair<Boolean, String?> {
+        return withContext(Dispatchers.IO) {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null)
             val serverUrl = getServerUrl(context)
+            
+            var result: Pair<Boolean, String?> = false to null
 
             // Attempt to notify server about logout
             if (refreshToken != null && serverUrl != null) {
                 try {
-                    val url = "$serverUrl/api/client/auth/logout"
+                    // Ensure server url doesn't end with slash (redundant check but safe)
+                    val cleanUrl = serverUrl.trim().removeSuffix("/")
+                    val url = "$cleanUrl/api/client/auth/logout"
                     val json = gson.toJson(mapOf("refreshToken" to refreshToken))
                     val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
                     
@@ -413,11 +419,31 @@ object SubLinksService {
                         .post(body)
                         .build()
 
-                    // We ignore the result as the user requested to clear local data regardless
-                    client.newCall(request).execute().use { _ -> }
+                    val response = client.newCall(request).execute()
+                    val responseBody = response.body?.string()
+                    
+                    if (responseBody != null) {
+                         try {
+                              val apiResponse = gson.fromJson(responseBody, LogoutResponse::class.java)
+                              if (apiResponse != null) {
+                                  result = apiResponse.success to apiResponse.message
+                              }
+                         } catch (e: Exception) {
+                              result = false to "Invalid response"
+                         }
+                    } else {
+                         result = false to "Empty response"
+                    }
+                    
+                    if (!response.isSuccessful && result.second == null) {
+                         result = false to "HTTP ${response.code}"
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    result = false to e.message
                 }
+            } else {
+                result = true to "Local logout only"
             }
 
             // Always clear local data
@@ -434,6 +460,8 @@ object SubLinksService {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            
+            result
         }
     }
 

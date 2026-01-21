@@ -36,6 +36,15 @@ class MainActivity : BaseActivity<MainDesign>() {
 
         val design = MainDesign(this)
 
+        val uiStore = com.github.kr328.clash.design.store.UiStore(this)
+        design.updateCardVisibility(
+            uiStore.showMainCard,
+            uiStore.showMainCardAvatar,
+            uiStore.showMainCardWelcome,
+            uiStore.showMainCardHitokoto,
+            uiStore.showMainCardRefresh
+        )
+
         setContentDesign(design)
 
         launch { design.updateHeroImage() }
@@ -131,16 +140,28 @@ class MainActivity : BaseActivity<MainDesign>() {
                         MainDesign.Request.OpenSettings ->
                             startActivity(SettingsActivity::class.intent)
                         MainDesign.Request.Logout -> {
-                            withProfile {
-                                try {
-                                    queryAll().forEach { delete(it.uuid) }
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                            androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+                                .setTitle(R.string.logout_confirmation_title)
+                                .setMessage(R.string.logout_confirmation_message)
+                                .setPositiveButton(R.string.ok) { _, _ ->
+                                    launch {
+                                        withContext(Dispatchers.Main) {
+                                             android.widget.Toast.makeText(this@MainActivity, R.string.logging_out, android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                        val (success, message) = SubLinksService.logout(this@MainActivity)
+                                        withContext(Dispatchers.Main) {
+                                            if (!message.isNullOrEmpty()) {
+                                                android.widget.Toast.makeText(this@MainActivity, message, android.widget.Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                android.widget.Toast.makeText(this@MainActivity, R.string.logout_success, android.widget.Toast.LENGTH_SHORT).show()
+                                            }
+                                            startActivity(android.content.Intent(this@MainActivity, LoginActivity::class.java))
+                                            finish()
+                                        }
+                                    }
                                 }
-                            }
-                            SubLinksService.logout(this@MainActivity)
-                            startActivity(android.content.Intent(this@MainActivity, LoginActivity::class.java))
-                            finish()
+                                .setNegativeButton(R.string.cancel, null)
+                                .show()
                         }
                         MainDesign.Request.RefreshImage -> {
                             launch {

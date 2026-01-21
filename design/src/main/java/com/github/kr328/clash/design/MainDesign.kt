@@ -46,10 +46,8 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
 
     suspend fun setAvatar(url: String?) {
         withContext(Dispatchers.Main) {
+            binding.avatarUrl = url
             binding.selfAvatar.load(url) {
-                placeholder(R.drawable.ic_baseline_person)
-                error(R.drawable.ic_baseline_person)
-                fallback(R.drawable.ic_baseline_person)
                 crossfade(true)
             }
         }
@@ -69,12 +67,8 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
 
     suspend fun setHeroImage(bitmap: android.graphics.Bitmap) {
         withContext(Dispatchers.Main) {
-            binding.heroImage.alpha = 0f
             binding.heroImage.setImageBitmap(bitmap)
-            binding.heroImage.animate()
-                .alpha(1f)
-                .setDuration(600)
-                .start()
+            binding.heroImage.alpha = 1f
         }
     }
 
@@ -127,11 +121,12 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         showRefresh: Boolean
     ) {
         withContext(Dispatchers.Main) {
-             binding.mainCardView.visibility = if (showCard) View.VISIBLE else View.GONE
-             binding.selfAvatar.visibility = if (showAvatar) View.VISIBLE else View.GONE
-             binding.welcomeTextView.visibility = if (showWelcome) View.VISIBLE else View.GONE
-             binding.hitokotoTextView.visibility = if (showHitokoto) View.VISIBLE else View.GONE
-             binding.heroRefreshButton.visibility = if (showRefresh) View.VISIBLE else View.GONE
+             binding.showMainCard = showCard
+             binding.showMainCardAvatar = showAvatar
+             binding.showMainCardWelcome = showWelcome
+             binding.showMainCardHitokoto = showHitokoto
+             binding.showMainCardRefresh = showRefresh
+             binding.executePendingBindings()
         }
     }
 
