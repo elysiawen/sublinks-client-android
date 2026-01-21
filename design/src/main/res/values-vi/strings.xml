@@ -14,7 +14,7 @@
     <string name="application_name_alpha">Clash Meta</string>
     <string name="application_name_meta">Clash Meta</string>
     <string name="clash_meta_core">Clash Meta Core</string>
-    <string name="clash_meta_for_android">Clash Meta</string>
+    <string name="clash_meta_for_android">SubLinks Client</string>
     <string name="clash_meta_wiki">Clash Meta Wiki</string>
     <string name="launch_name_alpha">Clash Meta</string>
     <string name="launch_name_meta">Clash Meta</string>
@@ -239,4 +239,46 @@
     <string name="import_from_qr">Nhập từ Mã QR</string>
     <string name="import_from_qr_no_permission">Quyền truy cập camera bị hạn chế. Vui lòng bật trong Cài đặt.</string>
     <string name="import_from_qr_exception">Đã xảy ra ngoại lệ hệ thống không xử lý được.</string>
+
+    <!-- Logout -->
+    <string name="logout">Đăng xuất</string>
+    <string name="logout_confirmation_title">Xác nhận đăng xuất</string>
+    <string name="logout_confirmation_message">Bạn có chắc chắn muốn đăng xuất không?</string>
+    <string name="logging_out">Đang đăng xuất...</string>
+    <string name="logout_success">Đăng xuất thành công</string>
+    <string name="logout_failed">Đăng xuất thất bại: %s</string>
+    <string name="format_logout">Đăng xuất (%s)</string>
+    <string name="format_welcome">Chào mừng trở lại, %s!</string>
+    <string name="welcome_guest">Chào mừng, Khách!</string>
+    <string name="hitokoto_loading">Đang tải Hitokoto...</string>
+    <string name="hitokoto_failed">Tải Hitokoto thất bại</string>
+    <string name="login_title">Đăng nhập SubLinks</string>
+    <string name="login_server_url">URL máy chủ API</string>
+    <string name="login_username">Tên người dùng</string>
+    <string name="login_password">Mật khẩu</string>
+    <string name="login_button">Đăng nhập</string>
+    <string name="login_fill_all">Vui lòng điền vào tất cả các trường</string>
+    <string name="login_success">Đăng nhập thành công</string>
+    <string name="login_failed_msg">Lỗi: %s</string>
+    <string name="token_expired">Token đã hết hạn, vui lòng đăng nhập lại</string>
+
+    <string name="syncing_subscriptions">Đang đồng bộ hóa đăng ký...</string>
+    <string name="sync_completed">Đồng bộ hóa hoàn tất</string>
+    <string name="sync_failed">Đồng bộ hóa thất bại: %s</string>
+
+    <string name="greeting_early_morning">Chào buổi sớm, %s!</string>
+    <string name="greeting_morning">Chào buổi sáng, %s!</string>
+    <string name="greeting_noon">Chào buổi trưa, %s!</string>
+    <string name="greeting_afternoon">Chào buổi chiều, %s!</string>
+    <string name="greeting_evening">Chào buổi tối, %s!</string>
+    <string name="greeting_night">Chào buổi đêm, %s!</string>
+
+    <!-- Blur Settings -->
+    <string name="main_card_blur_radius">Bán kính làm mờ thẻ</string>
+    <string name="main_card_blur_summary">Đặt bán kính làm mờ Gaussian cho thẻ chính (0-25)</string>
+    <string name="main_card_visible">Hiển thị thẻ thông tin</string>
+    <string name="main_card_avatar_visible">Hiển thị hình đại diện</string>
+    <string name="main_card_welcome_visible">Hiển thị tin nhắn chào mừng</string>
+    <string name="main_card_hitokoto_visible">Hiển thị Hitokoto</string>
+    <string name="main_card_refresh_visible">Hiển thị nút làm mới</string>
 </resources>

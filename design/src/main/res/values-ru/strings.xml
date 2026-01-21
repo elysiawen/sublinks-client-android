@@ -193,7 +193,7 @@
     <string name="import_from_clipboard">Импорт из буфера обмена</string>
     <string name="export_to_clipboard">Экспорт в буфер обмена</string>
 
-    <string name="clash_meta_for_android">Clash Meta для Android</string>
+    <string name="clash_meta_for_android">SubLinks Client</string>
 
     <string name="document">Документ</string>
     <string name="feedback">Обратная связь</string>
@@ -317,4 +317,46 @@
     <string name="override_destination">Override Destination</string>
     <string name="import_from_qr_no_permission">Доступ к камере ограничен. Разрешите его в настройках.</string>
     <string name="import_from_qr_exception">Произошла не обрабатываемая системная ошибка.</string>
+
+    <!-- Logout -->
+    <string name="logout">Выйти</string>
+    <string name="logout_confirmation_title">Подтверждение выхода</string>
+    <string name="logout_confirmation_message">Вы уверены, что хотите выйти из аккаунта?</string>
+    <string name="logging_out">Выход из системы...</string>
+    <string name="logout_success">Выход выполнен успешно</string>
+    <string name="logout_failed">Не удалось выйти: %s</string>
+    <string name="format_logout">Выйти (%s)</string>
+    <string name="format_welcome">С возвращением, %s!</string>
+    <string name="welcome_guest">Добро пожаловать, %s!</string>
+    <string name="hitokoto_loading">Цитата загружается...</string>
+    <string name="hitokoto_failed">Не удалось загрузить цитату</string>
+    <string name="login_title">Вход в SubLinks</string>
+    <string name="login_server_url">URL сервера API</string>
+    <string name="login_username">Имя пользователя</string>
+    <string name="login_password">Пароль</string>
+    <string name="login_button">Войти</string>
+    <string name="login_fill_all">Пожалуйста, заполните все поля</string>
+    <string name="login_success">Вход выполнен успешно</string>
+    <string name="login_failed_msg">Ошибка: %s</string>
+    <string name="token_expired">Истек срок действия токена, войдите снова</string>
+
+    <string name="syncing_subscriptions">Синхронизация подписок...</string>
+    <string name="sync_completed">Синхронизация завершена</string>
+    <string name="sync_failed">Ошибка синхронизации: %s</string>
+
+    <string name="greeting_early_morning">Доброй ночи, %s!</string>
+    <string name="greeting_morning">Доброе утро, %s!</string>
+    <string name="greeting_noon">Добрый день, %s!</string>
+    <string name="greeting_afternoon">Добрый день, %s!</string>
+    <string name="greeting_evening">Добрый вечер, %s!</string>
+    <string name="greeting_night">Доброй ночи, %s!</string>
+
+    <!-- Blur Settings -->
+    <string name="main_card_blur_radius">Радиус размытия карточки</string>
+    <string name="main_card_blur_summary">Установите радиус размытия для главной карточки (0-25)</string>
+    <string name="main_card_visible">Показать информационную карточку</string>
+    <string name="main_card_avatar_visible">Показать аватар</string>
+    <string name="main_card_welcome_visible">Показать приветствие</string>
+    <string name="main_card_hitokoto_visible">Показать цитату</string>
+    <string name="main_card_refresh_visible">Показать кнопку обновления</string>
 </resources>

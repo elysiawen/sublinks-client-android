@@ -160,7 +160,7 @@
     <string name="select_none">クリア</string>
     <string name="import_from_clipboard">クリップボードからインポート</string>
     <string name="export_to_clipboard">クリップボードにエクスポート</string>
-    <string name="clash_meta_for_android">Clash Meta for Android</string>
+    <string name="clash_meta_for_android">SubLinks Client</string>
     <string name="document">ドキュメント</string>
     <string name="feedback">フィードバック</string>
     <string name="sources">ソース</string>
@@ -253,4 +253,46 @@
     <string name="override_destination">Override Destination</string>
     <string name="import_from_qr_no_permission">カメラのアクセスが制限されています。設定から有効にしてください。</string>
     <string name="import_from_qr_exception">システムで予期しない例外が発生しました。</string>
+
+    <!-- Logout -->
+    <string name="logout">ログアウト</string>
+    <string name="logout_confirmation_title">ログアウトの確認</string>
+    <string name="logout_confirmation_message">ログアウトしますか？</string>
+    <string name="logging_out">ログアウト中...</string>
+    <string name="logout_success">ログアウトしました</string>
+    <string name="logout_failed">ログアウト失敗: %s</string>
+    <string name="format_logout">ログアウト (%s)</string>
+    <string name="format_welcome">お帰りなさい、%s！</string>
+    <string name="welcome_guest">ようこそ、ゲスト！</string>
+    <string name="hitokoto_loading">一言読み込み中...</string>
+    <string name="hitokoto_failed">一言の読み込みに失敗しました</string>
+    <string name="login_title">SubLinks ログイン</string>
+    <string name="login_server_url">APIサーバーURL</string>
+    <string name="login_username">ユーザー名</string>
+    <string name="login_password">パスワード</string>
+    <string name="login_button">ログイン</string>
+    <string name="login_fill_all">すべてのフィールドを入力してください</string>
+    <string name="login_success">ログイン成功</string>
+    <string name="login_failed_msg">エラー: %s</string>
+    <string name="token_expired">トークンの有効期限が切れました。再度ログインしてください</string>
+
+    <string name="syncing_subscriptions">サブスクリプションを同期中...</string>
+    <string name="sync_completed">同期完了</string>
+    <string name="sync_failed">同期失敗: %s</string>
+
+    <string name="greeting_early_morning">おはようございます、%s！</string>
+    <string name="greeting_morning">おはようございます、%s！</string>
+    <string name="greeting_noon">こんにちは、%s！</string>
+    <string name="greeting_afternoon">こんにちは、%s！</string>
+    <string name="greeting_evening">こんばんは、%s！</string>
+    <string name="greeting_night">こんばんは、%s！</string>
+
+    <!-- Blur Settings -->
+    <string name="main_card_blur_radius">カードのぼかし半径</string>
+    <string name="main_card_blur_summary">メインカードのガウスぼかし半径を設定 (0-25)</string>
+    <string name="main_card_visible">情報カードを表示</string>
+    <string name="main_card_avatar_visible">アバターを表示</string>
+    <string name="main_card_welcome_visible">歓迎メッセージを表示</string>
+    <string name="main_card_hitokoto_visible">一言を表示</string>
+    <string name="main_card_refresh_visible">更新ボタンを表示</string>
 </resources>

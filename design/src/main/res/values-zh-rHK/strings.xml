@@ -210,7 +210,7 @@
     <string name="name_server_policy">Name Server 策略</string>
     <string name="block_loopback">阻止本地迴環</string>
     <string name="block_loopback_summary">阻止本地迴環連接</string>
-    <string name="clash_meta_for_android">Clash Meta for Android</string>
+    <string name="clash_meta_for_android">SubLinks Client</string>
     <string name="clash_meta_wiki">Clash Meta Wiki</string>
     <string name="meta_features">Meta Features</string>
     <string name="unified_delay">Unified Delay</string>
@@ -250,4 +250,46 @@
     <string name="override_destination">Override Destination</string>
     <string name="import_from_qr_no_permission">相機權限受限，請前往設定開啟。</string>
     <string name="import_from_qr_exception">發生系統未知異常，操作失敗。</string>
+
+    <!-- Logout -->
+    <string name="logout">登出</string>
+    <string name="logout_confirmation_title">確認登出</string>
+    <string name="logout_confirmation_message">確定要登出嗎？</string>
+    <string name="logging_out">正在登出...</string>
+    <string name="logout_success">已成功登出</string>
+    <string name="logout_failed">登出失敗： %s</string>
+    <string name="format_logout">登出 (%s)</string>
+    <string name="format_welcome">歡迎回來，%s！</string>
+    <string name="welcome_guest">歡迎，訪客！</string>
+    <string name="hitokoto_loading">一言載入中...</string>
+    <string name="hitokoto_failed">一言載入失敗</string>
+    <string name="login_title">SubLinks 登入</string>
+    <string name="login_server_url">API 伺服器位址</string>
+    <string name="login_username">使用者名稱</string>
+    <string name="login_password">密碼</string>
+    <string name="login_button">登入</string>
+    <string name="login_fill_all">請填寫所有欄位</string>
+    <string name="login_success">登入成功</string>
+    <string name="login_failed_msg">錯誤： %s</string>
+    <string name="token_expired">Token 過期，請重新登入</string>
+
+    <string name="syncing_subscriptions">正在同步訂閱...</string>
+    <string name="sync_completed">同步完成</string>
+    <string name="sync_failed">同步失敗： %s</string>
+
+    <string name="greeting_early_morning">早安，%s！</string>
+    <string name="greeting_morning">早安，%s！</string>
+    <string name="greeting_noon">午安，%s！</string>
+    <string name="greeting_afternoon">午安，%s！</string>
+    <string name="greeting_evening">晚安，%s！</string>
+    <string name="greeting_night">晚安，%s！</string>
+
+    <!-- Blur Settings -->
+    <string name="main_card_blur_radius">卡片模糊半徑</string>
+    <string name="main_card_blur_summary">設定主卡片的高斯模糊半徑 (0-25)</string>
+    <string name="main_card_visible">顯示資訊卡片</string>
+    <string name="main_card_avatar_visible">顯示頭像</string>
+    <string name="main_card_welcome_visible">顯示歡迎訊息</string>
+    <string name="main_card_hitokoto_visible">顯示一言</string>
+    <string name="main_card_refresh_visible">顯示重新整理按鈕</string>
 </resources>
