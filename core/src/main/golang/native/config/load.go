@@ -8,7 +8,7 @@ import (
 
 	"cfa/native/app"
 
-	"github.com/metacubex/mihomo/common/yaml"
+	"gopkg.in/yaml.v3"
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/hub"
 	"github.com/metacubex/mihomo/log"
