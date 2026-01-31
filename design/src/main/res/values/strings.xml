@@ -147,9 +147,21 @@
     <string name="login_failed_msg">Error: %s</string>
     <string name="token_expired">Token expired, please login again</string>
 
+    <string name="scan_login_title">Scan Login</string>
+    <string name="scan_login_confirm_title">Confirm Web Login</string>
+    <string name="scan_login_confirm_message">Do you want to authorize login on device:\n\n%s?</string>
+    <string name="scan_login_success">Web login confirmed!</string>
+    <string name="scan_login_failed">Login failed: %s</string>
+    <string name="scan_login_invalid">Valid QR code not found</string>
+    <string name="scan_login_confirm_btn">Confirm Login</string>
+    <string name="scan_login_reject_btn">Reject Login</string>
+    <string name="scan_login_loading">Logging in…</string>
+    <string name="scan_login_dev_info">Device Info</string>
+
     <string name="syncing_subscriptions">Syncing subscriptions...</string>
     <string name="sync_completed">Sync completed</string>
     <string name="sync_failed">Sync failed: %s</string>
+    <string name="sync_failed_login_tip">Sync failed: %s. Please retry in Configuration (Top Right Button).</string>
 
     <string name="greeting_early_morning">Good early morning, %s!</string>
     <string name="greeting_morning">Good morning, %s!</string>

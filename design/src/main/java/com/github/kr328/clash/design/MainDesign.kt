@@ -23,6 +23,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         OpenSettings,
         Logout,
         RefreshImage,
+        OpenScan,
     }
 
     private val binding = DesignMainBinding

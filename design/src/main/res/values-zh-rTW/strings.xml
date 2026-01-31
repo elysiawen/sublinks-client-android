@@ -276,6 +276,7 @@
     <string name="syncing_subscriptions">正在同步訂閱...</string>
     <string name="sync_completed">同步完成</string>
     <string name="sync_failed">同步失敗： %s</string>
+    <string name="sync_failed_login_tip">同步失敗：%s。請在「配置」中重試（右上角按鈕）。</string>
 
     <string name="greeting_early_morning">早安，%s！</string>
     <string name="greeting_morning">早安，%s！</string>

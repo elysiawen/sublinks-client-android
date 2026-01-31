@@ -30,7 +30,7 @@ object SubLinksService {
     @androidx.annotation.Keep
     data class LogoutResponse(val success: Boolean, val message: String?)
     @androidx.annotation.Keep
-    data class Subscription(val name: String, val url: String)
+    data class Subscription(val name: String, val url: String, val enabled: Boolean = true)
     @androidx.annotation.Keep
     data class SubscriptionsResponse(val subscriptions: List<Subscription>)
 
@@ -479,6 +479,187 @@ object SubLinksService {
         return context.getString(resId, username)
     }
 
+    @androidx.annotation.Keep
+    data class QrScanRequest(val token: String)
+    @androidx.annotation.Keep
+    data class QrScanResult(val ip: String, val ua: String)
+    @androidx.annotation.Keep
+    data class QrScanResponse(val success: Boolean, val data: QrScanResult?, val error: String?)
+    @androidx.annotation.Keep
+    data class QrConfirmRequest(val token: String)
+    @androidx.annotation.Keep
+    data class QrConfirmResponse(val success: Boolean, val message: String?)
+
+    @androidx.annotation.Keep
+    data class QrRejectRequest(val token: String)
+
+    suspend fun qrReject(context: Context, token: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authToken = getToken(context) ?: return@withContext false
+                val serverUrl = getServerUrl(context) ?: return@withContext false
+                val cleanUrl = serverUrl.trim().removeSuffix("/")
+                val url = "$cleanUrl/api/client/auth/qr/reject"
+
+                val json = gson.toJson(QrRejectRequest(token))
+                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request = Request.Builder()
+                    .url(url)
+                    .header("Authorization", "Bearer $authToken")
+                    .header("User-Agent", USER_AGENT)
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+
+                if (response.code == 401) {
+                     if (refreshAccessToken(context)) {
+                          val newToken = getToken(context) ?: return@withContext false
+                          val retryRequest = request.newBuilder()
+                                .header("Authorization", "Bearer $newToken")
+                                .build()
+                          val retryResponse = client.newCall(retryRequest).execute()
+                          return@withContext retryResponse.isSuccessful
+                     }
+                     return@withContext false
+                }
+
+                response.isSuccessful
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    @androidx.annotation.Keep
+    data class IpInfoResponse(
+        val status: String,
+        val country: String,
+        val regionName: String,
+        val city: String,
+        val isp: String,
+        val query: String
+    )
+
+    suspend fun fetchIpInfo(ip: String): IpInfoResponse? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder()
+                    .url("http://ip-api.com/json/$ip?lang=zh-CN")
+                    .get()
+                    .build()
+                val response = client.newCall(request).execute()
+                val body = response.body?.string() ?: return@withContext null
+                gson.fromJson(body, IpInfoResponse::class.java)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+
+    fun parseUserAgent(ua: String): String {
+        return when {
+            ua.contains("Windows", ignoreCase = true) -> "Windows"
+            ua.contains("Macintosh", ignoreCase = true) || ua.contains("Mac OS", ignoreCase = true) -> "macOS"
+            ua.contains("Android", ignoreCase = true) -> "Android"
+            ua.contains("iPhone", ignoreCase = true) || ua.contains("iPad", ignoreCase = true) || ua.contains("iOS", ignoreCase = true) -> "iOS"
+            ua.contains("Linux", ignoreCase = true) -> "Linux"
+            else -> "Unknown Device"
+        }
+    }
+
+    suspend fun qrScan(context: Context, token: String): QrScanResult? {
+        return withContext(Dispatchers.IO) {
+            try {
+                // No auth header needed for scan, just token in body? 
+                // Doc says: POST /api/client/auth/qr/scan
+                // Body: { "token": "..." }
+                // Response: { "success": true, "data": { "ip": "...", "ua": "..." } }
+
+                val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
+                val cleanUrl = serverUrl.trim().removeSuffix("/")
+                val url = "$cleanUrl/api/client/auth/qr/scan"
+                
+                val json = gson.toJson(QrScanRequest(token))
+                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+                
+                val request = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", USER_AGENT)
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string() ?: throw IOException("Empty response")
+                
+                if (!response.isSuccessful) {
+                    throw IOException("HTTP ${response.code}: $responseBody")
+                }
+
+                val apiResponse = gson.fromJson(responseBody, QrScanResponse::class.java)
+                if (apiResponse.success && apiResponse.data != null) {
+                    apiResponse.data
+                } else {
+                    throw IOException(apiResponse.error ?: "Unknown error")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
+    suspend fun qrConfirm(context: Context, token: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Needs auth header
+                val authToken = getToken(context) ?: throw AuthenticationException("Not logged in")
+                val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
+                val cleanUrl = serverUrl.trim().removeSuffix("/")
+                
+                val url = "$cleanUrl/api/client/auth/qr/confirm"
+                val json = gson.toJson(QrConfirmRequest(token))
+                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+                
+                val request = Request.Builder()
+                    .url(url)
+                    .header("Authorization", "Bearer $authToken")
+                    .header("User-Agent", USER_AGENT)
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                
+                if (response.code == 401 || response.code == 403) {
+                     // Try refresh
+                     if (refreshAccessToken(context)) {
+                          val newToken = getToken(context) ?: throw AuthenticationException("Refresh failed")
+                          val retryRequest = request.newBuilder()
+                                .header("Authorization", "Bearer $newToken")
+                                .build()
+                          val retryResponse = client.newCall(retryRequest).execute()
+                          if (!retryResponse.isSuccessful) throw IOException("Retry failed: ${retryResponse.code}")
+                          return@withContext true
+                     } else {
+                          throw AuthenticationException("Token expired")
+                     }
+                }
+                
+                if (!response.isSuccessful) {
+                     val errBody = response.body?.string()
+                     throw IOException("HTTP ${response.code}: $errBody")
+                }
+                
+                true
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+    }
+
     private fun generateUrlSuffix(url: String): String {
         return try {
             val digest = java.security.MessageDigest.getInstance("MD5")
@@ -497,7 +678,7 @@ object SubLinksService {
     }
 
     suspend fun sync(context: Context, onProgress: suspend (String) -> Unit) {
-        val subscriptions = fetchSubscriptions(context)
+        val subscriptions = fetchSubscriptions(context).filter { it.enabled }
 
         com.github.kr328.clash.util.withProfile {
             val currentProfiles = queryAll()

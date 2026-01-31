@@ -149,6 +149,7 @@
     <string name="syncing_subscriptions">正在同步订阅...</string>
     <string name="sync_completed">同步完成</string>
     <string name="sync_failed">同步失败: %s</string>
+    <string name="sync_failed_login_tip">同步失败：%s。请在“配置”中重试（右上角按钮）。</string>
 
     <string name="greeting_early_morning">凌晨好，%s！</string>
     <string name="greeting_morning">早上好，%s！</string>
@@ -320,6 +321,17 @@
     <string name="external_control_stopped">Clash.Meta 服务已停止</string>
     <string name="import_from_qr_no_permission">相机权限受限，请前往设置开启。</string>
     <string name="import_from_qr_exception">发生系统未知异常，操作失败。</string>
+
+    <string name="scan_login_title">扫一扫</string>
+    <string name="scan_login_confirm_title">确认网页端登录</string>
+    <string name="scan_login_confirm_message">是否允许在以下设备登录：\n\n%s？</string>
+    <string name="scan_login_success">网页端登录已确认！</string>
+    <string name="scan_login_failed">登录失败: %s</string>
+    <string name="scan_login_invalid">未发现有效的二维码</string>
+    <string name="scan_login_confirm_btn">确认登录</string>
+    <string name="scan_login_reject_btn">拒绝登录</string>
+    <string name="scan_login_loading">登录中…</string>
+    <string name="scan_login_dev_info">设备信息</string>
 
     <!-- Blur Settings -->
     <string name="main_card_blur_radius">卡片高斯模糊半径</string>

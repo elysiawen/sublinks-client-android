@@ -57,13 +57,12 @@ class LoginActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish()
                     } catch (e: Exception) {
-                         Toast.makeText(this@LoginActivity, getString(DesignR.string.sync_failed, e.message), Toast.LENGTH_LONG).show()
-                         // Still enter main activity? Or stay?
-                         // User said "Download then enter". If failed, maybe enter anyway?
-                         // But usually if failed, user might want to retry.
-                         // Let's stay and re-enable button.
-                         btnLogin.isEnabled = true
-                         btnLogin.setText(DesignR.string.login_button)
+                         Toast.makeText(this@LoginActivity, getString(DesignR.string.sync_failed_login_tip, e.message), Toast.LENGTH_LONG).show()
+                         // Proceed to main activity even if sync fails, so user can retry manually
+                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                         intent.putExtra("skip_sync", true)
+                         startActivity(intent)
+                         finish()
                     }
                 } else {
                     Toast.makeText(this@LoginActivity, error, Toast.LENGTH_LONG).show()

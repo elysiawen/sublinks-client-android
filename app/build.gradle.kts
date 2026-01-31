@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.okhttp)
     implementation(libs.gson)
+    implementation(libs.coil)
 }
 
 tasks.getByName("clean", type = Delete::class) {

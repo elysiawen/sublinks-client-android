@@ -2,6 +2,9 @@ package com.github.kr328.clash
 
 import android.app.Application
 import android.content.Context
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.compat.currentProcessName
 import com.github.kr328.clash.common.log.Log
@@ -13,11 +16,23 @@ import java.io.FileOutputStream
 
 
 @Suppress("unused")
-class MainApplication : Application() {
+class MainApplication : Application(), ImageLoaderFactory {
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
 
         Global.init(this)
+    }
+
+    override fun newImageLoader(): ImageLoader {
+        return ImageLoader.Builder(this)
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache"))
+                    .maxSizePercent(0.02)
+                    .build()
+            }
+            .respectCacheHeaders(false)
+            .build()
     }
 
     override fun onCreate() {

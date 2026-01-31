@@ -25,7 +25,87 @@ import java.util.concurrent.TimeUnit
 import com.github.kr328.clash.design.R
 import kotlinx.coroutines.launch
 
+import io.github.g00fy2.quickie.QRResult
+import io.github.g00fy2.quickie.ScanQRCode
+
 class MainActivity : BaseActivity<MainDesign>() {
+    private val scanQr = registerForActivityResult(ScanQRCode()) { result ->
+        this@MainActivity.launch {
+            when (result) {
+                is QRResult.QRSuccess -> {
+                    val content = result.content.rawValue ?: ""
+                    // Scheme: sublinks://login/<token>
+                    if (content.startsWith("sublinks://login/")) {
+                        val token = content.removePrefix("sublinks://login/")
+                        handleQrLogin(token)
+                    } else {
+                        design?.showToast(R.string.scan_login_invalid, ToastDuration.Short)
+                    }
+                }
+                is QRResult.QRUserCanceled -> Unit // Do nothing
+                is QRResult.QRMissingPermission -> design?.showToast(
+                    R.string.import_from_qr_no_permission,
+                    ToastDuration.Long
+                )
+
+                is Exception -> design?.showToast(
+                    R.string.import_from_qr_exception,
+                    ToastDuration.Long
+                )
+
+                else -> {}
+            }
+        }
+    }
+
+    private fun handleQrLogin(token: String) {
+        launch {
+            val loading = androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+                .setView(android.widget.ProgressBar(this@MainActivity).apply { 
+                    setPadding(50, 50, 50, 50) 
+                })
+                .setCancelable(false)
+                .show()
+
+            try {
+                // 1. Scan (Notify server & get info)
+                val info = SubLinksService.qrScan(this@MainActivity, token)
+                loading.dismiss()
+
+                if (info != null) {
+                    // 2. Launch Confirmation Activity
+                    val intent = android.content.Intent(this@MainActivity, QrLoginConfirmActivity::class.java).apply {
+                        putExtra(QrLoginConfirmActivity.EXTRA_TOKEN, token)
+                        putExtra(QrLoginConfirmActivity.EXTRA_IP, info.ip)
+                        putExtra(QrLoginConfirmActivity.EXTRA_UA, info.ua)
+                    }
+                    startActivity(intent)
+                } else {
+                    design?.showToast(getString(R.string.scan_login_failed, "Unknown error"), ToastDuration.Long)
+                }
+            } catch (e: Exception) {
+                loading.dismiss()
+                e.printStackTrace()
+                design?.showToast(getString(R.string.scan_login_failed, e.message), ToastDuration.Long)
+            }
+        }
+    }
+
+    private fun confirmQrLogin(token: String) {
+        launch {
+             try {
+                 val success = SubLinksService.qrConfirm(this@MainActivity, token)
+                 if (success) {
+                     design?.showToast(R.string.scan_login_success, ToastDuration.Short)
+                 } else {
+                     design?.showToast(getString(R.string.scan_login_failed, "Failed"), ToastDuration.Long)
+                 }
+             } catch (e: Exception) {
+                 design?.showToast(getString(R.string.scan_login_failed, e.message), ToastDuration.Long)
+             }
+        }
+    }
+
     override suspend fun main() {
         // SubLinks Login Check
         if (!SubLinksService.isLoggedIn(this)) {
@@ -139,6 +219,8 @@ class MainActivity : BaseActivity<MainDesign>() {
 
                         MainDesign.Request.OpenSettings ->
                             startActivity(SettingsActivity::class.intent)
+                        MainDesign.Request.OpenScan ->
+                            scanQr.launch(null)
                         MainDesign.Request.Logout -> {
                             androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
                                 .setTitle(R.string.logout_confirmation_title)

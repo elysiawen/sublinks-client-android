@@ -123,6 +123,10 @@
             android:exported="false"
             android:label="@string/create_profile" />
         <activity
+            android:name=".QrLoginConfirmActivity"
+            android:theme="@style/BootstrapTheme" />
+
+        <activity
             android:name=".PropertiesActivity"
             android:configChanges="uiMode"
             android:exported="false"

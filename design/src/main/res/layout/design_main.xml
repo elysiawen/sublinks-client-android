@@ -254,6 +254,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/main_label_margin_vertical"
+                    android:onClick="@{() -> self.request(Request.OpenScan)}"
+                    app:icon="@drawable/baseline_qr_code_scanner"
+                    app:text="@string/scan_login_title" />
+
+                <com.github.kr328.clash.design.view.LargeActionLabel
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="@dimen/main_label_margin_vertical"
                     android:onClick="@{() -> self.request(Request.Logout)}"
                     app:icon="@drawable/ic_baseline_exit_to_app"
                     app:text="@{username != null ? @string/format_logout(username) : @string/logout}" />
