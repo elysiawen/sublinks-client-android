@@ -40,9 +40,8 @@ class LoginActivity : AppCompatActivity() {
 
                 // Use the configured URL directly
                 val server = SubLinksService.getServerUrl(this@LoginActivity) ?: ""
-                val error = SubLinksService.login(this@LoginActivity, server, username, password)
-
-                if (error == null) {
+                
+                suspend fun handleLoginSuccess() {
                     btnLogin.text = getString(DesignR.string.initializing) // Initializing
                     
                     try {
@@ -64,10 +63,66 @@ class LoginActivity : AppCompatActivity() {
                          startActivity(intent)
                          finish()
                     }
-                } else {
-                    Toast.makeText(this@LoginActivity, error, Toast.LENGTH_LONG).show()
-                    btnLogin.isEnabled = true
-                    btnLogin.setText(DesignR.string.login_button)
+                }
+
+                val result = SubLinksService.login(this@LoginActivity, server, username, password)
+
+                when (result) {
+                    is SubLinksService.LoginResult.Success -> {
+                        handleLoginSuccess()
+                    }
+                    is SubLinksService.LoginResult.Requires2FA -> {
+                        btnLogin.isEnabled = true
+                        btnLogin.setText(DesignR.string.login_button)
+                        
+                        val input = com.google.android.material.textfield.TextInputEditText(this@LoginActivity).apply {
+                            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                            hint = getString(DesignR.string.login_2fa_hint)
+                            maxLines = 1
+                        }
+                        val container = android.widget.FrameLayout(this@LoginActivity).apply {
+                            val params = android.widget.FrameLayout.LayoutParams(
+                                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                            )
+                            val margin = (24 * resources.displayMetrics.density).toInt()
+                            params.setMargins(margin, margin/4, margin, margin/4)
+                            input.layoutParams = params
+                            addView(input)
+                        }
+                        
+                        com.google.android.material.dialog.MaterialAlertDialogBuilder(this@LoginActivity)
+                            .setTitle(DesignR.string.login_2fa_title)
+                            .setMessage(result.message)
+                            .setView(container)
+                            .setPositiveButton(DesignR.string.login_2fa_confirm) { _, _ ->
+                                val code = input.text.toString()
+                                if (code.isEmpty()) return@setPositiveButton
+                                
+                                scope.launch {
+                                    btnLogin.isEnabled = false
+                                    btnLogin.text = getString(DesignR.string.loading)
+                                    val secondResult = SubLinksService.login(this@LoginActivity, server, username, password, code)
+                                    if (secondResult is SubLinksService.LoginResult.Success) {
+                                        handleLoginSuccess()
+                                    } else {
+                                        val errorMsg = if (secondResult is SubLinksService.LoginResult.Error) secondResult.message else (secondResult as SubLinksService.LoginResult.Requires2FA).message
+                                        Toast.makeText(this@LoginActivity, errorMsg, Toast.LENGTH_LONG).show()
+                                        btnLogin.isEnabled = true
+                                        btnLogin.setText(DesignR.string.login_button)
+                                    }
+                                }
+                            }
+                            .setNegativeButton(DesignR.string.login_2fa_cancel, null)
+                            .show()
+                        
+                        input.requestFocus()
+                    }
+                    is SubLinksService.LoginResult.Error -> {
+                        Toast.makeText(this@LoginActivity, result.message, Toast.LENGTH_LONG).show()
+                        btnLogin.isEnabled = true
+                        btnLogin.setText(DesignR.string.login_button)
+                    }
                 }
             }
         }

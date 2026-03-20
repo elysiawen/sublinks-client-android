@@ -22,9 +22,15 @@ object SubLinksService {
     private val USER_AGENT = "SubLinks Client Android/${BuildConfig.VERSION_NAME}"
 
     @androidx.annotation.Keep
-    data class LoginRequest(val username: String, val password: String, val deviceInfo: String? = null)
+    data class LoginRequest(val username: String, val password: String, val code: String? = null, val deviceInfo: String? = null)
     @androidx.annotation.Keep
-    data class LoginResponse(val token: String?, val accessToken: String?, val access_token: String?, val refreshToken: String?, val user: Any?, val error: String?)
+    data class LoginResponse(val token: String?, val accessToken: String?, val access_token: String?, val refreshToken: String?, val user: Any?, val error: String?, val requires2FA: Boolean? = null, val message: String? = null)
+    
+    sealed class LoginResult {
+        object Success : LoginResult()
+        data class Requires2FA(val message: String) : LoginResult()
+        data class Error(val message: String) : LoginResult()
+    }
     @androidx.annotation.Keep
     data class RefreshResponse(val accessToken: String?, val access_token: String?, val error: String?)
     @androidx.annotation.Keep
@@ -48,7 +54,7 @@ object SubLinksService {
         return BuildConfig.SUBLINKS_API_URL
     }
 
-    suspend fun login(context: Context, serverUrl: String, username: String, password: String): String? {
+    suspend fun login(context: Context, serverUrl: String, username: String, password: String, code: String? = null): LoginResult {
         return withContext(Dispatchers.IO) {
             try {
                 // Ensure server url doesn't end with slash
@@ -56,7 +62,7 @@ object SubLinksService {
                 val url = "$cleanUrl/api/client/auth/login"
                 
                 val deviceInfo = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})"
-                val json = gson.toJson(LoginRequest(username, password, deviceInfo))
+                val json = gson.toJson(LoginRequest(username, password, code, deviceInfo))
                 val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
@@ -75,12 +81,16 @@ object SubLinksService {
                     null
                 }
 
-                if (!response.isSuccessful) {
-                    val errorMsg = loginResponse?.error ?: "HTTP ${response.code}: ${response.message}"
-                    throw IOException(errorMsg)
+                if (response.isSuccessful && loginResponse?.requires2FA == true) {
+                    return@withContext LoginResult.Requires2FA(loginResponse?.message ?: "该账户已启用两步验证，请提供 TOTP 验证码")
                 }
 
-                loginResponse ?: throw IOException("Invalid JSON response")
+                if (!response.isSuccessful) {
+                    val errorMsg = loginResponse?.error ?: "HTTP ${response.code}: ${response.message}"
+                    return@withContext LoginResult.Error(errorMsg)
+                }
+
+                loginResponse ?: return@withContext LoginResult.Error("Invalid JSON response")
                 
                 val token = loginResponse.token ?: loginResponse.accessToken ?: loginResponse.access_token
                 val refreshToken = loginResponse.refreshToken
@@ -93,13 +103,13 @@ object SubLinksService {
                         .putString(KEY_SERVER, cleanUrl)
                         .putString(KEY_USER, gson.toJson(loginResponse.user))
                         .apply()
-                    null // Success
+                    LoginResult.Success // Success
                 } else {
-                     loginResponse.error ?: "Login failed: No token received"
+                    LoginResult.Error(loginResponse.error ?: "Login failed: No token received")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                e.message ?: "Unknown error"
+                LoginResult.Error(e.message ?: "Unknown error")
             }
         }
     }

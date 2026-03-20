@@ -145,6 +145,10 @@
     <string name="login_success">登录成功</string>
     <string name="login_failed_msg">错误: %s</string>
     <string name="token_expired">Token 已失效，请重新登录</string>
+    <string name="login_2fa_title">两步验证 (2FA)</string>
+    <string name="login_2fa_hint">6 位验证码</string>
+    <string name="login_2fa_confirm">验证</string>
+    <string name="login_2fa_cancel">取消</string>
 
     <string name="syncing_subscriptions">正在同步订阅...</string>
     <string name="sync_completed">同步完成</string>

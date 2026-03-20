@@ -146,6 +146,10 @@
     <string name="login_success">Login Successful</string>
     <string name="login_failed_msg">Error: %s</string>
     <string name="token_expired">Token expired, please login again</string>
+    <string name="login_2fa_title">Two-Factor Authentication</string>
+    <string name="login_2fa_hint">6-digit Verification Code</string>
+    <string name="login_2fa_confirm">Verify</string>
+    <string name="login_2fa_cancel">Cancel</string>
 
     <string name="scan_login_title">Scan Login</string>
     <string name="scan_login_confirm_title">Confirm Web Login</string>
