@@ -18,8 +18,8 @@ import com.github.kr328.clash.service.util.sendServiceRecreated
 import com.github.kr328.clash.util.clashDir
 import java.io.File
 import java.io.FileOutputStream
+import com.github.kr328.clash.R
 import com.github.kr328.clash.design.R as DesignR
-
 
 @Suppress("unused")
 class MainApplication : Application(), ImageLoaderFactory {
