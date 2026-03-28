@@ -67,6 +67,8 @@
     <string name="global_mode">全局模式</string>
     <string name="hide_app_icon_title">隐藏应用图标</string>
     <string name="hide_app_icon_desc">可以在拨号盘输入 *#*#252746382#*#* 打开应用</string>
+    <string name="hide_from_recents_title">从最近任务隐藏</string>
+    <string name="hide_from_recents_desc">在最近任务中隐藏应用</string>
     <string name="history">历史</string>
     <string name="import_from_file">从文件导入</string>
     <string name="import_from_url">从 URL 导入</string>
@@ -345,4 +347,12 @@
     <string name="main_card_welcome_visible">显示欢迎语</string>
     <string name="main_card_hitokoto_visible">显示每日一言</string>
     <string name="main_card_refresh_visible">显示刷新按钮</string>
+
+    <!-- App Shortcuts (upstream) -->
+    <string name="shortcut_toggle_short">切换 Clash</string>
+    <string name="shortcut_toggle_long">切换 Clash 服务启停</string>
+    <string name="shortcut_start_short">启动 Clash</string>
+    <string name="shortcut_start_long">启动 Clash 服务</string>
+    <string name="shortcut_stop_short">停止 Clash</string>
+    <string name="shortcut_stop_long">停止 Clash 服务</string>
 </resources>
