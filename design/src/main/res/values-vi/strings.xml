@@ -344,7 +344,7 @@
     <string name="check_update">Kiểm tra cập nhật</string>
     <string name="check_update_summary">Kiểm tra xem có phiên bản mới không</string>
     <string name="update_checking">Đang kiểm tra…</string>
-    <string name="update_available">Đã có phiên bản mới %1$s (%.1f MB)</string>
+    <string name="update_available">Đã có phiên bản mới %1$s (%2$s MB)</string>
     <string name="update_up_to_date">Bạn đang dùng phiên bản mới nhất</string>
     <string name="update_check_failed">Kiểm tra cập nhật thất bại: %s</string>
     <string name="update_download">Tải về</string>

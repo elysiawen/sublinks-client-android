@@ -50,14 +50,14 @@ class SettingsActivity : BaseActivity<SettingsDesign>() {
                             activity.launch {
                                 try {
                                     withContext(Dispatchers.Main) {
-                                        Toast.makeText(activity, DesignR.string.update_checking, Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(activity, "[v2] " + activity.getString(DesignR.string.update_checking), Toast.LENGTH_SHORT).show()
                                     }
                                     val result = SubLinksService.checkForUpdate()
                                     if (!activity.isActive) return@launch
                                     withContext(Dispatchers.Main) {
                                         when (result) {
                                             is SubLinksService.UpdateResult.Available -> {
-                                                val sizeMB = result.fileSize / 1024.0 / 1024.0
+                                                val sizeMB = "%.1f".format(result.fileSize / 1024.0 / 1024.0)
                                                 val message = activity.getString(DesignR.string.update_available, result.newVersion, sizeMB)
                                                 androidx.appcompat.app.AlertDialog.Builder(activity)
                                                     .setTitle(DesignR.string.update_new_version_title)
@@ -73,13 +73,24 @@ class SettingsActivity : BaseActivity<SettingsDesign>() {
                                                 Toast.makeText(activity, DesignR.string.update_up_to_date, Toast.LENGTH_LONG).show()
                                             }
                                             is SubLinksService.UpdateResult.Error -> {
-                                                Toast.makeText(activity, getString(DesignR.string.update_check_failed, result.message), Toast.LENGTH_LONG).show()
+                                                android.util.Log.e("Update", "Error: ${result.message}")
+                                                androidx.appcompat.app.AlertDialog.Builder(activity)
+                                                    .setTitle("Update Debug")
+                                                    .setMessage("[v2] ${result.message}")
+                                                    .setPositiveButton(android.R.string.ok, null)
+                                                    .show()
                                             }
                                         }
                                     }
                                 } catch (e: Exception) {
+                                    android.util.Log.e("Update", "Crash", e)
+                                    val stackTrace = e.stackTrace.take(5).joinToString("\n") { it.toString() }
                                     withContext(Dispatchers.Main) {
-                                        Toast.makeText(activity, getString(DesignR.string.update_check_failed, e.message ?: "Unknown"), Toast.LENGTH_LONG).show()
+                                        androidx.appcompat.app.AlertDialog.Builder(activity)
+                                            .setTitle("Update Crash")
+                                            .setMessage("[v2] ${e.javaClass.name}\n${e.message}\n\n$stackTrace")
+                                            .setPositiveButton(android.R.string.ok, null)
+                                            .show()
                                     }
                                 }
                             }

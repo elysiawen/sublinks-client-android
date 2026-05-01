@@ -422,7 +422,7 @@
     <string name="check_update">Проверить обновления</string>
     <string name="check_update_summary">Проверить наличие новой версии</string>
     <string name="update_checking">Проверка обновлений…</string>
-    <string name="update_available">Доступна новая версия %1$s (%.1f МБ)</string>
+    <string name="update_available">Доступна новая версия %1$s (%2$s МБ)</string>
     <string name="update_up_to_date">У вас последняя версия</string>
     <string name="update_check_failed">Ошибка проверки обновлений: %s</string>
     <string name="update_download">Скачать</string>
