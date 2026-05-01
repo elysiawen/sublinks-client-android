@@ -55,6 +55,16 @@
             name="showMainCardRefresh"
             type="boolean" />
 
+        <variable
+            name="showUpdateCard"
+            type="boolean" />
+        <variable
+            name="updateVersion"
+            type="String" />
+        <variable
+            name="updateSize"
+            type="String" />
+
         <import type="android.view.View" />
         <import type="com.github.kr328.clash.design.MainDesign.Request" />
     </data>
@@ -201,6 +211,63 @@
                         android:src="@drawable/ic_baseline_sync"
                         android:onClick="@{() -> self.request(Request.RefreshImage)}"
                         app:tint="@android:color/white" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="@dimen/main_card_margin_vertical"
+                    android:visibility="@{showUpdateCard ? View.VISIBLE : View.GONE}"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="?attr/colorPrimary"
+                    app:strokeWidth="2dp"
+                    android:onClick="@{() -> self.request(Request.DownloadUpdate)}">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_baseline_cloud_download"
+                            android:layout_marginEnd="12dp"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{updateVersion}"
+                                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{updateSize}"
+                                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_baseline_close"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:onClick="@{() -> self.request(Request.SkipUpdate)}"
+                            android:contentDescription="@string/close" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.github.kr328.clash.design.view.LargeActionCard

@@ -185,6 +185,19 @@ class MainActivity : BaseActivity<MainDesign>() {
              design.setHitokoto(hitokoto ?: getString(R.string.hitokoto_failed))
         }
 
+        if (SubLinksService.isUpdateEnabled()) {
+             launch {
+                 val result = SubLinksService.checkForUpdate()
+                 if (result is SubLinksService.UpdateResult.Available) {
+                     val store = com.github.kr328.clash.service.store.SubLinksStore(this@MainActivity)
+                     if (result.newVersion != store.skippedUpdateVersion) {
+                         val sizeMB = "%.1f MB".format(result.fileSize / 1024.0 / 1024.0)
+                         design.showUpdateCard(result.newVersion, sizeMB, result.downloadUrl)
+                     }
+                 }
+             }
+        }
+
         design.fetch()
 
         val ticker = ticker(TimeUnit.SECONDS.toMillis(1))
@@ -250,6 +263,17 @@ class MainActivity : BaseActivity<MainDesign>() {
                             launch {
                                 design.updateHeroImage(true)
                             }
+                        }
+                        MainDesign.Request.DownloadUpdate -> {
+                            val url = design.getStoredDownloadUrl()
+                            if (url.isNotEmpty()) {
+                                startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+                            }
+                        }
+                        MainDesign.Request.SkipUpdate -> {
+                            val store = com.github.kr328.clash.service.store.SubLinksStore(this@MainActivity)
+                            store.skippedUpdateVersion = design.getStoredVersion()
+                            design.hideUpdateCard()
                         }
                     }
                 }

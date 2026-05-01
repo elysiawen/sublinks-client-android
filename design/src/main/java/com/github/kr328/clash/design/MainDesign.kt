@@ -24,6 +24,8 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         Logout,
         RefreshImage,
         OpenScan,
+        SkipUpdate,
+        DownloadUpdate,
     }
 
     private val binding = DesignMainBinding
@@ -130,6 +132,30 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
              binding.executePendingBindings()
         }
     }
+
+    private var _updateDownloadUrl: String = ""
+    private var _updateVersion: String = ""
+
+    suspend fun showUpdateCard(version: String, size: String, downloadUrl: String) {
+        withContext(Dispatchers.Main) {
+            binding.showUpdateCard = true
+            binding.updateVersion = context.getString(R.string.update_available_short, version)
+            binding.updateSize = size
+            _updateDownloadUrl = downloadUrl
+            _updateVersion = version
+            binding.executePendingBindings()
+        }
+    }
+
+    suspend fun hideUpdateCard() {
+        withContext(Dispatchers.Main) {
+            binding.showUpdateCard = false
+            binding.executePendingBindings()
+        }
+    }
+
+    fun getStoredDownloadUrl(): String = _updateDownloadUrl
+    fun getStoredVersion(): String = _updateVersion
 
     init {
         binding.self = this

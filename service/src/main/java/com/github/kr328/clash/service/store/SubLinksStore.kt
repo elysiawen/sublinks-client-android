@@ -35,6 +35,11 @@ class SubLinksStore(context: Context) {
         defaultValue = "#FF0000"
     )
 
+    var skippedUpdateVersion by store.string(
+        key = "skipped_update_version",
+        defaultValue = ""
+    )
+
     companion object {
         const val DEFAULT_BACKGROUND_URL = "https://www.loliapi.com/acg/"
     }

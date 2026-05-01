@@ -334,6 +334,8 @@
     <string name="update_check_failed">检查更新失败：%s</string>
     <string name="update_download">下载</string>
     <string name="update_new_version_title">发现新版本</string>
+    <string name="update_available_short">新版本 v%s 可用</string>
+    <string name="update_skip_version">跳过此版本</string>
 
     <string name="import_from_qr_no_permission">相机权限受限，请前往设置开启。</string>
     <string name="import_from_qr_exception">发生系统未知异常，操作失败。</string>

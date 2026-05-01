@@ -433,6 +433,8 @@
     <string name="update_check_failed">Update check failed: %s</string>
     <string name="update_download">Download</string>
     <string name="update_new_version_title">New Version Available</string>
+    <string name="update_available_short">v%s available</string>
+    <string name="update_skip_version">Skip this version</string>
 
     <string name="import_from_qr_no_permission">Camera access is restricted. Please enable it in Settings.</string>
     <string name="import_from_qr_exception">An unhandled system exception occurred.</string>
