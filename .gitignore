@@ -67,3 +67,5 @@ build_log*.txt
 .DS_Store
 
 release.keystore
+
+.claude
