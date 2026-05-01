@@ -248,16 +248,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@{updateVersion}"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@{updateSize}"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                                android:textSize="14sp" />
                         </LinearLayout>
 
                         <ImageButton
