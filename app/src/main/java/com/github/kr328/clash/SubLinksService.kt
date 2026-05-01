@@ -742,11 +742,12 @@ object SubLinksService {
     }
 
     suspend fun checkForUpdate(): UpdateResult {
-        if (!isUpdateEnabled()) return UpdateResult.Error("Update check disabled")
+        if (!isUpdateEnabled()) return UpdateResult.Error("disabled")
 
         return withContext(Dispatchers.IO) {
             try {
-                val arch = when (android.os.Build.SUPPORTED_ABIS[0]) {
+                val abi = android.os.Build.SUPPORTED_ABIS[0]
+                val arch = when (abi) {
                     "arm64-v8a" -> "arm64"
                     "armeabi-v7a" -> "armv7"
                     "x86" -> "x86"
@@ -760,6 +761,8 @@ object SubLinksService {
                     "&arch=$arch" +
                     "&buildType=release"
 
+                Log.i("Update: URL=$url, ABI=$abi")
+
                 val request = Request.Builder()
                     .url(url)
                     .header("User-Agent", USER_AGENT)
@@ -767,42 +770,51 @@ object SubLinksService {
                     .build()
 
                 val response = client.newCall(request).execute()
-                val responseBody = response.use { it.body?.string() }
-                    ?: return@withContext UpdateResult.Error("Empty response")
+                val responseBody = response.use { it.body?.string() } ?: ""
+
+                Log.i("Update: HTTP ${response.code}, body=${responseBody.take(300)}")
 
                 if (!response.isSuccessful) {
-                    return@withContext UpdateResult.Error("HTTP ${response.code}")
+                    return@withContext UpdateResult.Error("HTTP ${response.code}: ${responseBody.take(100)}")
                 }
 
                 val root = try {
-                    com.google.gson.JsonParser.parseString(responseBody).asJsonObject
+                    com.google.gson.JsonParser.parseString(responseBody)
                 } catch (e: Exception) {
-                    Log.w("Update check parse failed, body: $responseBody", e)
-                    return@withContext UpdateResult.Error("Invalid response")
+                    Log.w("Update: JSON parse error", e)
+                    return@withContext UpdateResult.Error("parse: ${e.message}")
                 }
 
-                val versionObj = root.getAsJsonObject("version") ?: run {
-                    Log.w("Update check: no version object in response")
-                    return@withContext UpdateResult.Error("Invalid response")
+                if (!root.isJsonObject) {
+                    return@withContext UpdateResult.Error("not a JSON object: ${responseBody.take(80)}")
                 }
+                val obj = root.asJsonObject
+
+                val versionObj = obj.getAsJsonObject("version")
+                if (versionObj == null) {
+                    return@withContext UpdateResult.Error("no 'version' field: ${responseBody.take(200)}")
+                }
+
                 val latestVersion = versionObj.get("version")?.asString
                 val fileSize = versionObj.get("fileSize")?.asLong ?: 0L
-                val downloadUrl = root.get("downloadUrl")?.asString
+                val downloadUrl = obj.get("downloadUrl")?.asString
 
-                if (latestVersion != null && downloadUrl != null) {
-                    if (latestVersion != BuildConfig.VERSION_NAME) {
-                        val fullUrl = if (downloadUrl.startsWith("http")) downloadUrl
-                            else "${BuildConfig.UPDATE_API_URL}$downloadUrl"
-                        UpdateResult.Available(latestVersion, fileSize, fullUrl)
-                    } else {
-                        UpdateResult.UpToDate
-                    }
+                if (latestVersion == null || downloadUrl == null) {
+                    return@withContext UpdateResult.Error(
+                        "version=${latestVersion}, downloadUrl=${downloadUrl}"
+                    )
+                }
+
+                if (latestVersion != BuildConfig.VERSION_NAME) {
+                    val fullUrl = if (downloadUrl.startsWith("http")) downloadUrl
+                        else "${BuildConfig.UPDATE_API_URL}$downloadUrl"
+                    UpdateResult.Available(latestVersion, fileSize, fullUrl)
                 } else {
-                    UpdateResult.Error("Invalid response")
+                    UpdateResult.UpToDate
                 }
             } catch (e: Exception) {
-                Log.w("Update check failed", e)
-                UpdateResult.Error(e.message ?: "Unknown error")
+                Log.e("Update: exception", e)
+                UpdateResult.Error("${e.javaClass.simpleName}: ${e.message}")
             }
         }
     }
