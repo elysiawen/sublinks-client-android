@@ -88,7 +88,7 @@ class QrLoginConfirmActivity : AppCompatActivity() {
                 try {
                     SubLinksService.qrReject(this@QrLoginConfirmActivity, token)
                 } catch (e: Exception) {
-                    Log.w("QrLoginConfirm", "QR reject failed", e)
+                    Log.w("QR reject failed", e)
                 } finally {
                     finish()
                 }

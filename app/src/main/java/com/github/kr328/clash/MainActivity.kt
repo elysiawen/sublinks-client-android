@@ -86,7 +86,7 @@ class MainActivity : BaseActivity<MainDesign>() {
                 }
             } catch (e: Exception) {
                 loading.dismiss()
-                Log.w("MainActivity", "QR scan failed", e)
+                Log.w("QR scan failed", e)
                 design?.showToast(getString(R.string.scan_login_failed, e.message), ToastDuration.Long)
             }
         }
@@ -168,7 +168,7 @@ class MainActivity : BaseActivity<MainDesign>() {
                           finish()
                       }
                   } catch (e: Exception) {
-                      Log.w("MainActivity", "Sync failed", e)
+                      Log.w("Sync failed", e)
                       withContext(Dispatchers.Main) {
                           android.widget.Toast.makeText(this@MainActivity, getString(R.string.sync_failed, e.message), android.widget.Toast.LENGTH_LONG).show()
                       }

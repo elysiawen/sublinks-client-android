@@ -119,7 +119,7 @@ object SubLinksService {
                     LoginResult.Error(loginResponse.error ?: "Login failed: No token received")
                 }
             } catch (e: Exception) {
-                Log.e("SubLinksService", "Login failed", e)
+                Log.e("Login failed", e)
                 LoginResult.Error(e.message ?: "Unknown error")
             }
         }
@@ -163,7 +163,7 @@ object SubLinksService {
                     false
                 }
             } catch (e: Exception) {
-                Log.e("SubLinksService", "Token refresh failed", e)
+                Log.e("Token refresh failed", e)
                 false
             }
         }
@@ -238,7 +238,7 @@ object SubLinksService {
                 null
             }
         } catch (e: Exception) {
-            Log.w("SubLinksService", "Failed to parse username", e)
+            Log.w("Failed to parse username", e)
             null
         }
     }
@@ -259,7 +259,7 @@ object SubLinksService {
                 null
             }
         } catch (e: Exception) {
-            Log.w("SubLinksService", "Failed to parse avatar", e)
+            Log.w("Failed to parse avatar", e)
             null
         }
     }
@@ -302,7 +302,7 @@ object SubLinksService {
                              return@withContext true
                         }
                     } catch (e: Exception) {
-                        Log.w("SubLinksService", "Failed to parse user info JSON", e)
+                        Log.w("Failed to parse user info JSON", e)
                     }
                 }
             } else {
@@ -324,7 +324,7 @@ object SubLinksService {
                 val hitokoto = gson.fromJson(body, HitokotoResponse::class.java)
                 hitokoto.hitokoto
             } catch (e: Exception) {
-                Log.w("SubLinksService", "Failed to fetch hitokoto", e)
+                Log.w("Failed to fetch hitokoto", e)
                 null
             }
         }
@@ -362,7 +362,7 @@ object SubLinksService {
                                 android.graphics.BitmapFactory.decodeStream(stream)
                             }
                         } catch (e: Exception) {
-                            Log.w("SubLinksService", "Failed to load local image", e)
+                            Log.w("Failed to load local image", e)
                             null
                         }
                     }
@@ -394,14 +394,14 @@ object SubLinksService {
                                 bitmap
                             }
                         } catch (e: Exception) {
-                            Log.w("SubLinksService", "Failed to generate color bitmap", e)
+                            Log.w("Failed to generate color bitmap", e)
                              null
                         }
                     }
                     else -> null
                 }
             } catch (e: Exception) {
-                Log.w("SubLinksService", "Failed to fetch random image", e)
+                Log.w("Failed to fetch random image", e)
                 null
             }
         }
@@ -450,7 +450,7 @@ object SubLinksService {
                          result = false to "HTTP ${response.code}"
                     }
                 } catch (e: Exception) {
-                    Log.e("SubLinksService", "Logout request failed", e)
+                    Log.e("Logout request failed", e)
                     result = false to e.message
                 }
             } else {
@@ -474,7 +474,7 @@ object SubLinksService {
                     }
                 }
             } catch (e: Exception) {
-                Log.w("SubLinksService", "Failed to delete profiles on logout", e)
+                Log.w("Failed to delete profiles on logout", e)
             }
             
             result
@@ -549,7 +549,7 @@ object SubLinksService {
 
     suspend fun fetchIpInfo(ip: String): IpInfoResponse? {
         if (!IP_PATTERN.matches(ip)) {
-            Log.w("SubLinksService", "Invalid IP address: $ip")
+            Log.w("Invalid IP address: $ip")
             return null
         }
         return withContext(Dispatchers.IO) {
@@ -562,7 +562,7 @@ object SubLinksService {
                 val body = response.use { it.body?.string() } ?: return@withContext null
                 gson.fromJson(body, IpInfoResponse::class.java)
             } catch (e: Exception) {
-                Log.w("SubLinksService", "Failed to fetch IP info", e)
+                Log.w("Failed to fetch IP info", e)
                 null
             }
         }

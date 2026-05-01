@@ -18,7 +18,7 @@ class SubLinksSettingsActivity : BaseActivity<SubLinksSettingsDesign>() {
                     android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
             } catch (e: Exception) {
-                Log.w("SubLinksSettings", "Failed to take persistable permission", e)
+                Log.w("Failed to take persistable permission", e)
             }
             val store = SubLinksStore(this)
             store.heroLocalUri = uri.toString()
