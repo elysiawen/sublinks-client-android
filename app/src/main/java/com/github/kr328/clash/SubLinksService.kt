@@ -729,21 +729,6 @@ object SubLinksService {
 
     // ── Update Check ──────────────────────────────────────────────
 
-    @androidx.annotation.Keep
-    data class UpdateVersionInfo(
-        val version: String,
-        val fileName: String,
-        val fileSize: Long,
-        val checksum: String
-    )
-    @androidx.annotation.Keep
-    data class UpdateCheckResponse(
-        val version: UpdateVersionInfo?,
-        val downloadUrl: String?,
-        val expiresIn: Int?,
-        val note: String?
-    )
-
     sealed class UpdateResult {
         data class Available(val newVersion: String, val fileSize: Long, val downloadUrl: String) : UpdateResult()
         object UpToDate : UpdateResult()
@@ -789,19 +774,26 @@ object SubLinksService {
                     return@withContext UpdateResult.Error("HTTP ${response.code}")
                 }
 
-                val updateResponse = gson.fromJson(responseBody, UpdateCheckResponse::class.java)
-                val latestVersion = updateResponse.version?.version
-                val downloadUrl = updateResponse.downloadUrl
+                val root = try {
+                    com.google.gson.JsonParser.parseString(responseBody).asJsonObject
+                } catch (e: Exception) {
+                    Log.w("Update check parse failed, body: $responseBody", e)
+                    return@withContext UpdateResult.Error("Invalid response")
+                }
+
+                val versionObj = root.getAsJsonObject("version") ?: run {
+                    Log.w("Update check: no version object in response")
+                    return@withContext UpdateResult.Error("Invalid response")
+                }
+                val latestVersion = versionObj.get("version")?.asString
+                val fileSize = versionObj.get("fileSize")?.asLong ?: 0L
+                val downloadUrl = root.get("downloadUrl")?.asString
 
                 if (latestVersion != null && downloadUrl != null) {
                     if (latestVersion != BuildConfig.VERSION_NAME) {
                         val fullUrl = if (downloadUrl.startsWith("http")) downloadUrl
                             else "${BuildConfig.UPDATE_API_URL}$downloadUrl"
-                        UpdateResult.Available(
-                            latestVersion,
-                            updateResponse.version.fileSize,
-                            fullUrl
-                        )
+                        UpdateResult.Available(latestVersion, fileSize, fullUrl)
                     } else {
                         UpdateResult.UpToDate
                     }
