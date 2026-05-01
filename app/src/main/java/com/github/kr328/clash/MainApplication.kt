@@ -10,6 +10,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import com.github.kr328.clash.common.Global
+import kotlinx.coroutines.launch
 import com.github.kr328.clash.common.compat.currentProcessName
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
@@ -46,7 +47,10 @@ class MainApplication : Application(), ImageLoaderFactory {
         super.onCreate()
 
         val processName = currentProcessName
-        extractGeoFiles()
+
+        Global.launch {
+            extractGeoFiles()
+        }
 
         Log.d("Process $processName started")
 
@@ -59,6 +63,7 @@ class MainApplication : Application(), ImageLoaderFactory {
     }
 
     private fun setupShortcuts() {
+        val uiStore = UiStore(this)
         if (uiStore.hideAppIcon) {
             // Prevent launcher activity not found.
             ShortcutManagerCompat.removeAllDynamicShortcuts(this)
@@ -144,7 +149,4 @@ class MainApplication : Application(), ImageLoaderFactory {
         }
     }
 
-    fun finalize() {
-        Global.destroy()
-    }
 }

@@ -12,7 +12,11 @@ import java.io.IOException
 import com.github.kr328.clash.design.R as DesignR
 
 object SubLinksService {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .build()
     private val gson = Gson()
     private const val PREFS_NAME = "sublinks_prefs"
     private const val KEY_TOKEN = "jwt_token"
@@ -160,13 +164,29 @@ object SubLinksService {
 
     class AuthenticationException(message: String) : IOException(message)
 
+    private suspend fun executeWithAuthRetry(context: Context, request: Request): okhttp3.Response {
+        var response = client.newCall(request).execute()
+        if (response.code == 401 || response.code == 403) {
+            if (refreshAccessToken(context)) {
+                val newToken = getToken(context) ?: throw AuthenticationException("Token refresh failed")
+                val retryRequest = request.newBuilder()
+                    .header("Authorization", "Bearer $newToken")
+                    .build()
+                response = client.newCall(retryRequest).execute()
+            } else {
+                throw AuthenticationException("Authentication failed: Token expired")
+            }
+        }
+        return response
+    }
+
     suspend fun fetchSubscriptions(context: Context): List<Subscription> {
         return withContext(Dispatchers.IO) {
             val token = getToken(context) ?: throw AuthenticationException("No token found")
             val serverUrl = getServerUrl(context) ?: throw IOException("No server URL found")
-            
+
             val url = "$serverUrl/api/client/subscriptions"
-            
+
             val request = Request.Builder()
                 .url(url)
                 .header("Authorization", "Bearer $token")
@@ -174,33 +194,15 @@ object SubLinksService {
                 .get()
                 .build()
 
-            var response = client.newCall(request).execute()
-            
-            // If 401, try to refresh token and retry
-            if (response.code == 401 || response.code == 403) {
-                val refreshed = refreshAccessToken(context)
-                if (refreshed) {
-                    // Retry with new token
-                    val newToken = getToken(context) ?: throw AuthenticationException("Token refresh failed")
-                    val retryRequest = Request.Builder()
-                        .url(url)
-                        .header("Authorization", "Bearer $newToken")
-                        .header("User-Agent", USER_AGENT)
-                        .get()
-                        .build()
-                    response = client.newCall(retryRequest).execute()
-                } else {
-                    throw AuthenticationException("Authentication failed: Token expired")
-                }
-            }
-            
+            val response = executeWithAuthRetry(context, request)
+
             if (!response.isSuccessful) {
                 throw IOException("Fetch failed: HTTP ${response.code}")
             }
 
             val responseBody = response.body?.string() ?: throw IOException("Empty response")
             val subResponse = gson.fromJson(responseBody, SubscriptionsResponse::class.java)
-            
+
             subResponse.subscriptions
         }
     }
@@ -270,19 +272,7 @@ object SubLinksService {
                 .get()
                 .build()
 
-            var response = client.newCall(request).execute()
-
-            if (response.code == 401 || response.code == 403) {
-                if (refreshAccessToken(context)) {
-                    val newToken = getToken(context) ?: return@withContext false
-                    val retryRequest = request.newBuilder()
-                        .header("Authorization", "Bearer $newToken")
-                        .build()
-                    response = client.newCall(retryRequest).execute()
-                } else {
-                    throw AuthenticationException("Token expired")
-                }
-            }
+            val response = executeWithAuthRetry(context, request)
 
             if (response.isSuccessful) {
                 val body = response.body?.string()
@@ -456,8 +446,13 @@ object SubLinksService {
                 result = true to "Local logout only"
             }
 
-            // Always clear local data
-            prefs.edit().clear().apply()
+            // Always clear auth data
+            prefs.edit()
+                .remove(KEY_TOKEN)
+                .remove(KEY_REFRESH_TOKEN)
+                .remove(KEY_SERVER)
+                .remove(KEY_USER)
+                .apply()
 
             try {
                 com.github.kr328.clash.util.withProfile {
@@ -521,20 +516,7 @@ object SubLinksService {
                     .post(body)
                     .build()
 
-                val response = client.newCall(request).execute()
-
-                if (response.code == 401) {
-                     if (refreshAccessToken(context)) {
-                          val newToken = getToken(context) ?: return@withContext false
-                          val retryRequest = request.newBuilder()
-                                .header("Authorization", "Bearer $newToken")
-                                .build()
-                          val retryResponse = client.newCall(retryRequest).execute()
-                          return@withContext retryResponse.isSuccessful
-                     }
-                     return@withContext false
-                }
-
+                val response = executeWithAuthRetry(context, request)
                 response.isSuccessful
             } catch (e: Exception) {
                 false
@@ -556,7 +538,7 @@ object SubLinksService {
         return withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder()
-                    .url("http://ip-api.com/json/$ip?lang=zh-CN")
+                    .url("https://ip-api.com/json/$ip?lang=zh-CN")
                     .get()
                     .build()
                 val response = client.newCall(request).execute()
@@ -624,15 +606,14 @@ object SubLinksService {
     suspend fun qrConfirm(context: Context, token: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                // Needs auth header
                 val authToken = getToken(context) ?: throw AuthenticationException("Not logged in")
                 val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
                 val cleanUrl = serverUrl.trim().removeSuffix("/")
-                
+
                 val url = "$cleanUrl/api/client/auth/qr/confirm"
                 val json = gson.toJson(QrConfirmRequest(token))
                 val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
-                
+
                 val request = Request.Builder()
                     .url(url)
                     .header("Authorization", "Bearer $authToken")
@@ -640,28 +621,13 @@ object SubLinksService {
                     .post(body)
                     .build()
 
-                val response = client.newCall(request).execute()
-                
-                if (response.code == 401 || response.code == 403) {
-                     // Try refresh
-                     if (refreshAccessToken(context)) {
-                          val newToken = getToken(context) ?: throw AuthenticationException("Refresh failed")
-                          val retryRequest = request.newBuilder()
-                                .header("Authorization", "Bearer $newToken")
-                                .build()
-                          val retryResponse = client.newCall(retryRequest).execute()
-                          if (!retryResponse.isSuccessful) throw IOException("Retry failed: ${retryResponse.code}")
-                          return@withContext true
-                     } else {
-                          throw AuthenticationException("Token expired")
-                     }
-                }
-                
+                val response = executeWithAuthRetry(context, request)
+
                 if (!response.isSuccessful) {
-                     val errBody = response.body?.string()
-                     throw IOException("HTTP ${response.code}: $errBody")
+                    val errBody = response.body?.string()
+                    throw IOException("HTTP ${response.code}: $errBody")
                 }
-                
+
                 true
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -6,16 +6,14 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.github.kr328.clash.R
 import com.github.kr328.clash.design.R as DesignR
 
 class LoginActivity : AppCompatActivity() {
-    private val scope = MainScope()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +32,7 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            scope.launch {
+            lifecycleScope.launch {
                 btnLogin.isEnabled = false
                 btnLogin.text = getString(DesignR.string.loading) // Use loading string or "Logging in..."
 
@@ -99,7 +97,7 @@ class LoginActivity : AppCompatActivity() {
                                 val code = input.text.toString()
                                 if (code.isEmpty()) return@setPositiveButton
                                 
-                                scope.launch {
+                                lifecycleScope.launch {
                                     btnLogin.isEnabled = false
                                     btnLogin.text = getString(DesignR.string.loading)
                                     val secondResult = SubLinksService.login(this@LoginActivity, server, username, password, code)
