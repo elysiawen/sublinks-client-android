@@ -353,4 +353,14 @@
     <string name="shortcut_start_long">Clash 서비스 시작</string>
     <string name="shortcut_stop_short">Clash 중지</string>
     <string name="shortcut_stop_long">Clash 서비스 중지</string>
+
+    <!-- Update Check -->
+    <string name="check_update">업데이트 확인</string>
+    <string name="check_update_summary">새 버전이 있는지 확인합니다</string>
+    <string name="update_checking">확인 중…</string>
+    <string name="update_available">새 버전 %1$s 사용 가능 (%.1f MB)</string>
+    <string name="update_up_to_date">최신 버전을 사용 중입니다</string>
+    <string name="update_check_failed">업데이트 확인 실패: %s</string>
+    <string name="update_download">다운로드</string>
+    <string name="update_new_version_title">새 버전이 있습니다</string>
 </resources>

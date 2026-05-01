@@ -326,6 +326,15 @@
     <string name="external_control_activity">外部控制</string>
     <string name="external_control_started">Clash.Meta 服务已启动</string>
     <string name="external_control_stopped">Clash.Meta 服务已停止</string>
+    <string name="check_update">检查更新</string>
+    <string name="check_update_summary">检查是否有新版本可用</string>
+    <string name="update_checking">正在检查更新…</string>
+    <string name="update_available">发现新版本 %1$s（%.1f MB）</string>
+    <string name="update_up_to_date">当前已是最新版本</string>
+    <string name="update_check_failed">检查更新失败：%s</string>
+    <string name="update_download">下载</string>
+    <string name="update_new_version_title">发现新版本</string>
+
     <string name="import_from_qr_no_permission">相机权限受限，请前往设置开启。</string>
     <string name="import_from_qr_exception">发生系统未知异常，操作失败。</string>
 

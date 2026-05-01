@@ -79,6 +79,13 @@
                 <com.github.kr328.clash.design.view.ActionLabel
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:onClick="@{() -> self.request(Request.CheckUpdate)}"
+                    app:icon="@drawable/ic_baseline_cloud_download"
+                    app:text="@string/check_update" />
+
+                <com.github.kr328.clash.design.view.ActionLabel
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:onClick="@{() -> self.request(Request.StartAbout)}"
                     app:icon="@drawable/ic_baseline_info"
                     app:text="@string/about" />

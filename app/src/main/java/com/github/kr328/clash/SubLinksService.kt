@@ -726,4 +726,92 @@ object SubLinksService {
             }
         }
     }
+
+    // ── Update Check ──────────────────────────────────────────────
+
+    @androidx.annotation.Keep
+    data class UpdateVersionInfo(
+        val version: String,
+        val fileName: String,
+        val fileSize: Long,
+        val checksum: String
+    )
+    @androidx.annotation.Keep
+    data class UpdateCheckResponse(
+        val version: UpdateVersionInfo?,
+        val downloadUrl: String?,
+        val expiresIn: Int?,
+        val note: String?
+    )
+
+    sealed class UpdateResult {
+        data class Available(val newVersion: String, val fileSize: Long, val downloadUrl: String) : UpdateResult()
+        object UpToDate : UpdateResult()
+        data class Error(val message: String) : UpdateResult()
+    }
+
+    fun isUpdateEnabled(): Boolean {
+        return BuildConfig.UPDATE_ENABLED
+            && BuildConfig.UPDATE_API_URL.isNotEmpty()
+            && BuildConfig.UPDATE_APP_NAME.isNotEmpty()
+    }
+
+    suspend fun checkForUpdate(): UpdateResult {
+        if (!isUpdateEnabled()) return UpdateResult.Error("Update check disabled")
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val arch = when (android.os.Build.SUPPORTED_ABIS[0]) {
+                    "arm64-v8a" -> "arm64"
+                    "armeabi-v7a" -> "armv7"
+                    "x86" -> "x86"
+                    "x86_64" -> "x64"
+                    else -> "universal"
+                }
+                val url = "${BuildConfig.UPDATE_API_URL}" +
+                    "/api/download/latest" +
+                    "?app=${BuildConfig.UPDATE_APP_NAME}" +
+                    "&platform=android" +
+                    "&arch=$arch" +
+                    "&buildType=release"
+
+                val request = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", USER_AGENT)
+                    .get()
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val responseBody = response.use { it.body?.string() }
+                    ?: return@withContext UpdateResult.Error("Empty response")
+
+                if (!response.isSuccessful) {
+                    return@withContext UpdateResult.Error("HTTP ${response.code}")
+                }
+
+                val updateResponse = gson.fromJson(responseBody, UpdateCheckResponse::class.java)
+                val latestVersion = updateResponse.version?.version
+                val downloadUrl = updateResponse.downloadUrl
+
+                if (latestVersion != null && downloadUrl != null) {
+                    if (latestVersion != BuildConfig.VERSION_NAME) {
+                        val fullUrl = if (downloadUrl.startsWith("http")) downloadUrl
+                            else "${BuildConfig.UPDATE_API_URL}$downloadUrl"
+                        UpdateResult.Available(
+                            latestVersion,
+                            updateResponse.version.fileSize,
+                            fullUrl
+                        )
+                    } else {
+                        UpdateResult.UpToDate
+                    }
+                } else {
+                    UpdateResult.Error("Invalid response")
+                }
+            } catch (e: Exception) {
+                Log.w("Update check failed", e)
+                UpdateResult.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
 }

@@ -425,6 +425,15 @@
     <string name="hide_app_icon_desc">You can dial *#*#252746382#*#* to open this App</string>
     <string name="hide_from_recents_title">Hide from Recents</string>
     <string name="hide_from_recents_desc">Hide app from the Recent apps screen</string>
+    <string name="check_update">Check for Updates</string>
+    <string name="check_update_summary">Check if a new version is available</string>
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_available">New version %1$s available (%.1f MB)</string>
+    <string name="update_up_to_date">You are using the latest version</string>
+    <string name="update_check_failed">Update check failed: %s</string>
+    <string name="update_download">Download</string>
+    <string name="update_new_version_title">New Version Available</string>
+
     <string name="import_from_qr_no_permission">Camera access is restricted. Please enable it in Settings.</string>
     <string name="import_from_qr_exception">An unhandled system exception occurred.</string>
 

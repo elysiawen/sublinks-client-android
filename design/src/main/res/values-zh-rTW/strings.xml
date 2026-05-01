@@ -348,4 +348,14 @@
     <string name="shortcut_start_long">啟動 Clash 服務</string>
     <string name="shortcut_stop_short">停止 Clash</string>
     <string name="shortcut_stop_long">停止 Clash 服務</string>
+
+    <!-- Update Check -->
+    <string name="check_update">檢查更新</string>
+    <string name="check_update_summary">檢查是否有新版本可用</string>
+    <string name="update_checking">正在檢查更新…</string>
+    <string name="update_available">發現新版本 %1$s（%.1f MB）</string>
+    <string name="update_up_to_date">目前是最新版本</string>
+    <string name="update_check_failed">檢查更新失敗：%s</string>
+    <string name="update_download">下載</string>
+    <string name="update_new_version_title">發現新版本</string>
 </resources>

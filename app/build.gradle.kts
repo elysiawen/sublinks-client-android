@@ -22,16 +22,26 @@ android {
             localProperties.load(FileInputStream(localPropertiesFile))
         }
 
+        val updateEnabled = localProperties.getProperty("UPDATE_ENABLED")?.toBoolean() ?: false
+        val updateApiUrl = localProperties.getProperty("UPDATE_API_URL") ?: ""
+        val updateAppName = localProperties.getProperty("UPDATE_APP_NAME") ?: ""
+
         getByName("release") {
             // Read specific key first, fallback to empty if not set
             val apiUrl = localProperties.getProperty("SUBLINKS_APIURL_RELEASE") ?: ""
             buildConfigField("String", "SUBLINKS_API_URL", "\"$apiUrl\"")
+            buildConfigField("boolean", "UPDATE_ENABLED", updateEnabled.toString())
+            buildConfigField("String", "UPDATE_API_URL", "\"$updateApiUrl\"")
+            buildConfigField("String", "UPDATE_APP_NAME", "\"$updateAppName\"")
         }
         getByName("debug") {
             // Read specific key first, fallback to default
             val apiUrl = localProperties.getProperty("SUBLINKS_APIURL_DEBUG")
-                ?: "http://192.168.1.100:3000/" 
+                ?: "http://192.168.1.100:3000/"
             buildConfigField("String", "SUBLINKS_API_URL", "\"$apiUrl\"")
+            buildConfigField("boolean", "UPDATE_ENABLED", updateEnabled.toString())
+            buildConfigField("String", "UPDATE_API_URL", "\"$updateApiUrl\"")
+            buildConfigField("String", "UPDATE_APP_NAME", "\"$updateAppName\"")
         }
     }
 
