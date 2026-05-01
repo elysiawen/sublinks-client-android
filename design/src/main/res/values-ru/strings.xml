@@ -359,4 +359,62 @@
     <string name="main_card_welcome_visible">Показать приветствие</string>
     <string name="main_card_hitokoto_visible">Показать цитату</string>
     <string name="main_card_refresh_visible">Показать кнопку обновления</string>
+
+    <!-- SubLinks Settings -->
+    <string name="auto_sync_startup">Автосинхронизация при запуске</string>
+    <string name="auto_sync_startup_summary">Автоматически синхронизировать подписки при запуске приложения</string>
+    <string name="personalization">Персонализация</string>
+    <string name="hero_background_type">Фон главной карточки</string>
+    <string name="hero_background_value">Параметры фона</string>
+    <string name="hero_background_value_hint">URL или значение цвета</string>
+    <string name="browse_image">Выбрать изображение</string>
+    <string name="browse_image_summary">Выбрать локальное изображение с устройства</string>
+    <string name="bg_type_network">Сетевое изображение</string>
+    <string name="bg_type_local">Локальное изображение</string>
+    <string name="bg_type_color">Сплошной цвет</string>
+    <string name="bg_value_color_hint">Код цвета (например, #FF0000)</string>
+    <string name="bg_value_network_hint">URL изображения (оставьте пустым для случайного API)</string>
+    <string name="enter_color_code">Введите код цвета</string>
+
+    <!-- Color Picker -->
+    <string name="color_solid_black">Сплошной: Чёрный</string>
+    <string name="color_solid_white">Сплошной: Белый</string>
+    <string name="color_solid_red">Сплошной: Красный</string>
+    <string name="color_solid_green">Сплошной: Зелёный</string>
+    <string name="color_solid_blue">Сплошной: Синий</string>
+    <string name="color_gradient_sunset">Градиент: Закат (Sunset)</string>
+    <string name="color_gradient_ocean">Градиент: Океан (Ocean)</string>
+    <string name="color_gradient_lush">Градиент: Зелень (Lush)</string>
+    <string name="color_gradient_cool_blues">Градиент: Синева (Cool Blues)</string>
+    <string name="color_custom">Пользовательский Hex цвет…</string>
+
+    <!-- 2FA -->
+    <string name="login_2fa_title">Двухфакторная аутентификация (2FA)</string>
+    <string name="login_2fa_hint">6-значный код подтверждения</string>
+    <string name="login_2fa_confirm">Подтвердить</string>
+    <string name="login_2fa_cancel">Отмена</string>
+    <string name="login_2fa_required">Требуется двухфакторная аутентификация. Введите ваш TOTP код.</string>
+
+    <!-- QR Scan Login -->
+    <string name="scan_login_title">Вход по QR</string>
+    <string name="scan_login_confirm_title">Подтверждение веб-входа</string>
+    <string name="scan_login_confirm_message">Разрешить вход на устройстве:\n\n%s?</string>
+    <string name="scan_login_success">Веб-вход подтверждён!</string>
+    <string name="scan_login_failed">Ошибка входа: %s</string>
+    <string name="scan_login_invalid">Действительный QR-код не найден</string>
+    <string name="scan_login_confirm_btn">Подтвердить вход</string>
+    <string name="scan_login_reject_btn">Отклонить вход</string>
+    <string name="scan_login_loading">Вход…</string>
+    <string name="scan_login_dev_info">Информация об устройстве</string>
+
+    <!-- Sync -->
+    <string name="sync_failed_login_tip">Ошибка синхронизации: %s. Повторите попытку в разделе «Конфигурация» (кнопка вверху справа).</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_toggle_short">Вкл/Выкл Clash</string>
+    <string name="shortcut_toggle_long">Включить/выключить службу Clash</string>
+    <string name="shortcut_start_short">Запустить Clash</string>
+    <string name="shortcut_start_long">Запустить службу Clash</string>
+    <string name="shortcut_stop_short">Остановить Clash</string>
+    <string name="shortcut_stop_long">Остановить службу Clash</string>
 </resources>

@@ -293,4 +293,59 @@
     <string name="main_card_welcome_visible">顯示歡迎訊息</string>
     <string name="main_card_hitokoto_visible">顯示一言</string>
     <string name="main_card_refresh_visible">顯示重新整理按鈕</string>
+
+    <!-- SubLinks Settings -->
+    <string name="auto_sync_startup">啟動時自動同步</string>
+    <string name="auto_sync_startup_summary">應用程式啟動時自動同步訂閱</string>
+    <string name="personalization">個人化</string>
+    <string name="hero_background_type">主頁卡片背景</string>
+    <string name="hero_background_value">背景參數</string>
+    <string name="hero_background_value_hint">URL 或顏色值</string>
+    <string name="browse_image">選擇圖片</string>
+    <string name="browse_image_summary">從裝置中選擇本地圖片</string>
+    <string name="bg_type_network">網絡圖片</string>
+    <string name="bg_type_local">本地圖片</string>
+    <string name="bg_type_color">純色填充</string>
+    <string name="bg_value_color_hint">顏色代碼（例如 #FF0000）</string>
+    <string name="bg_value_network_hint">圖片連結（留空使用隨機 API）</string>
+    <string name="enter_color_code">輸入顏色代碼</string>
+
+    <!-- Color Picker -->
+    <string name="color_solid_black">純色: 黑色</string>
+    <string name="color_solid_white">純色: 白色</string>
+    <string name="color_solid_red">純色: 紅色</string>
+    <string name="color_solid_green">純色: 綠色</string>
+    <string name="color_solid_blue">純色: 藍色</string>
+    <string name="color_gradient_sunset">漸層: 日落 (Sunset)</string>
+    <string name="color_gradient_ocean">漸層: 海洋 (Ocean)</string>
+    <string name="color_gradient_lush">漸層: 蔥鬱 (Lush)</string>
+    <string name="color_gradient_cool_blues">漸層: 藍調 (Cool Blues)</string>
+    <string name="color_custom">自訂 Hex 顏色…</string>
+
+    <!-- 2FA -->
+    <string name="login_2fa_title">兩步驟驗證 (2FA)</string>
+    <string name="login_2fa_hint">6 位數驗證碼</string>
+    <string name="login_2fa_confirm">驗證</string>
+    <string name="login_2fa_cancel">取消</string>
+    <string name="login_2fa_required">該帳戶已啟用兩步驟驗證，請提供您的 TOTP 驗證碼。</string>
+
+    <!-- QR Scan Login -->
+    <string name="scan_login_title">掃碼登入</string>
+    <string name="scan_login_confirm_title">確認網頁端登入</string>
+    <string name="scan_login_confirm_message">是否允許在下列裝置登入：\n\n%s？</string>
+    <string name="scan_login_success">網頁端登入已確認！</string>
+    <string name="scan_login_failed">登入失敗: %s</string>
+    <string name="scan_login_invalid">未發現有效的 QR 碼</string>
+    <string name="scan_login_confirm_btn">確認登入</string>
+    <string name="scan_login_reject_btn">拒絕登入</string>
+    <string name="scan_login_loading">登入中…</string>
+    <string name="scan_login_dev_info">裝置資訊</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_toggle_short">切換 Clash</string>
+    <string name="shortcut_toggle_long">切換 Clash 服務啟停</string>
+    <string name="shortcut_start_short">啟動 Clash</string>
+    <string name="shortcut_start_long">啟動 Clash 服務</string>
+    <string name="shortcut_stop_short">停止 Clash</string>
+    <string name="shortcut_stop_long">停止 Clash 服務</string>
 </resources>

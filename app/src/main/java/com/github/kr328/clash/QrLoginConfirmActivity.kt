@@ -5,14 +5,13 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.design.R as DesignR
 import com.github.kr328.clash.R
 
 class QrLoginConfirmActivity : AppCompatActivity() {
-    private val scope = MainScope()
 
     companion object {
         const val EXTRA_TOKEN = "token"
@@ -42,7 +41,7 @@ class QrLoginConfirmActivity : AppCompatActivity() {
         textIp.text = ip
         textLocation.text = "Loading..."
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val ipInfo = SubLinksService.fetchIpInfo(ip)
                 if (ipInfo != null && ipInfo.status == "success") {
@@ -58,7 +57,7 @@ class QrLoginConfirmActivity : AppCompatActivity() {
         }
 
         btnConfirm.setOnClickListener {
-            scope.launch {
+            lifecycleScope.launch {
                 val originalText = btnConfirm.text
                 btnConfirm.isEnabled = false
                 btnConfirm.text = getString(DesignR.string.scan_login_loading)
@@ -84,12 +83,12 @@ class QrLoginConfirmActivity : AppCompatActivity() {
         }
 
         btnCancel.setOnClickListener {
-            scope.launch {
+            lifecycleScope.launch {
                 btnCancel.isEnabled = false
                 try {
                     SubLinksService.qrReject(this@QrLoginConfirmActivity, token)
                 } catch (e: Exception) {
-                    // Ignore errors on reject
+                    Log.w("QrLoginConfirm", "QR reject failed", e)
                 } finally {
                     finish()
                 }
@@ -97,8 +96,4 @@ class QrLoginConfirmActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        scope.cancel()
-    }
 }

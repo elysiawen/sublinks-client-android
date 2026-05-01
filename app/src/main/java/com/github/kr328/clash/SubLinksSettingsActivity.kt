@@ -6,6 +6,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.design.R as DesignR
 
 class SubLinksSettingsActivity : BaseActivity<SubLinksSettingsDesign>() {
@@ -17,8 +18,7 @@ class SubLinksSettingsActivity : BaseActivity<SubLinksSettingsDesign>() {
                     android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
             } catch (e: Exception) {
-                // Ignore failure to take persistable permission
-                e.printStackTrace()
+                Log.w("SubLinksSettings", "Failed to take persistable permission", e)
             }
             val store = SubLinksStore(this)
             store.heroLocalUri = uri.toString()

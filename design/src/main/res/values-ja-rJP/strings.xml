@@ -295,4 +295,62 @@
     <string name="main_card_welcome_visible">歓迎メッセージを表示</string>
     <string name="main_card_hitokoto_visible">一言を表示</string>
     <string name="main_card_refresh_visible">更新ボタンを表示</string>
+
+    <!-- SubLinks Settings -->
+    <string name="auto_sync_startup">起動時に自動同期</string>
+    <string name="auto_sync_startup_summary">アプリ起動時にサブスクリプションを自動同期</string>
+    <string name="personalization">個人設定</string>
+    <string name="hero_background_type">ホームカードの背景</string>
+    <string name="hero_background_value">背景パラメータ</string>
+    <string name="hero_background_value_hint">URL またはカラー値</string>
+    <string name="browse_image">画像を選択</string>
+    <string name="browse_image_summary">デバイスからローカル画像を選択</string>
+    <string name="bg_type_network">ネットワーク画像</string>
+    <string name="bg_type_local">ローカル画像</string>
+    <string name="bg_type_color">単色</string>
+    <string name="bg_value_color_hint">カラーコード（例: #FF0000）</string>
+    <string name="bg_value_network_hint">画像URL（空白の場合はランダムAPIを使用）</string>
+    <string name="enter_color_code">カラーコードを入力</string>
+
+    <!-- Color Picker -->
+    <string name="color_solid_black">単色: 黒</string>
+    <string name="color_solid_white">単色: 白</string>
+    <string name="color_solid_red">単色: 赤</string>
+    <string name="color_solid_green">単色: 緑</string>
+    <string name="color_solid_blue">単色: 青</string>
+    <string name="color_gradient_sunset">グラデーション: 夕日 (Sunset)</string>
+    <string name="color_gradient_ocean">グラデーション: 海 (Ocean)</string>
+    <string name="color_gradient_lush">グラデーション: 緑豊か (Lush)</string>
+    <string name="color_gradient_cool_blues">グラデーション: クールブルー (Cool Blues)</string>
+    <string name="color_custom">カスタム Hex カラー…</string>
+
+    <!-- 2FA -->
+    <string name="login_2fa_title">二段階認証 (2FA)</string>
+    <string name="login_2fa_hint">6桁の認証コード</string>
+    <string name="login_2fa_confirm">確認</string>
+    <string name="login_2fa_cancel">キャンセル</string>
+    <string name="login_2fa_required">二段階認証が必要です。TOTP認証コードを入力してください。</string>
+
+    <!-- QR Scan Login -->
+    <string name="scan_login_title">QRログイン</string>
+    <string name="scan_login_confirm_title">Webログインの確認</string>
+    <string name="scan_login_confirm_message">以下のデバイスでのログインを許可しますか：\n\n%s？</string>
+    <string name="scan_login_success">Webログインが確認されました！</string>
+    <string name="scan_login_failed">ログイン失敗: %s</string>
+    <string name="scan_login_invalid">有効なQRコードが見つかりません</string>
+    <string name="scan_login_confirm_btn">ログインを許可</string>
+    <string name="scan_login_reject_btn">ログインを拒否</string>
+    <string name="scan_login_loading">ログイン中…</string>
+    <string name="scan_login_dev_info">デバイス情報</string>
+
+    <!-- Sync -->
+    <string name="sync_failed_login_tip">同期失敗: %s。「設定」から再試行してください（右上のボタン）。</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_toggle_short">Clash 切替</string>
+    <string name="shortcut_toggle_long">Clash サービスのオン/オフを切替</string>
+    <string name="shortcut_start_short">Clash 開始</string>
+    <string name="shortcut_start_long">Clash サービスを開始</string>
+    <string name="shortcut_stop_short">Clash 停止</string>
+    <string name="shortcut_stop_long">Clash サービスを停止</string>
 </resources>

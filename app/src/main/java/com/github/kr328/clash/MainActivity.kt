@@ -22,6 +22,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.design.R
 import kotlinx.coroutines.launch
 
@@ -85,7 +86,7 @@ class MainActivity : BaseActivity<MainDesign>() {
                 }
             } catch (e: Exception) {
                 loading.dismiss()
-                e.printStackTrace()
+                Log.w("MainActivity", "QR scan failed", e)
                 design?.showToast(getString(R.string.scan_login_failed, e.message), ToastDuration.Long)
             }
         }
@@ -167,7 +168,7 @@ class MainActivity : BaseActivity<MainDesign>() {
                           finish()
                       }
                   } catch (e: Exception) {
-                      e.printStackTrace()
+                      Log.w("MainActivity", "Sync failed", e)
                       withContext(Dispatchers.Main) {
                           android.widget.Toast.makeText(this@MainActivity, getString(R.string.sync_failed, e.message), android.widget.Toast.LENGTH_LONG).show()
                       }

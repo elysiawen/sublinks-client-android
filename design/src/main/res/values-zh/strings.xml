@@ -151,6 +151,7 @@
     <string name="login_2fa_hint">6 位验证码</string>
     <string name="login_2fa_confirm">验证</string>
     <string name="login_2fa_cancel">取消</string>
+    <string name="login_2fa_required">该账户已启用两步验证，请提供 TOTP 验证码。</string>
 
     <string name="syncing_subscriptions">正在同步订阅...</string>
     <string name="sync_completed">同步完成</string>

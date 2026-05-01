@@ -281,4 +281,62 @@
     <string name="main_card_welcome_visible">Hiển thị tin nhắn chào mừng</string>
     <string name="main_card_hitokoto_visible">Hiển thị Hitokoto</string>
     <string name="main_card_refresh_visible">Hiển thị nút làm mới</string>
+
+    <!-- SubLinks Settings -->
+    <string name="auto_sync_startup">Tự động đồng bộ khi khởi động</string>
+    <string name="auto_sync_startup_summary">Tự động đồng bộ đăng ký khi khởi động ứng dụng</string>
+    <string name="personalization">Cá nhân hóa</string>
+    <string name="hero_background_type">Nền thẻ chính</string>
+    <string name="hero_background_value">Tham số nền</string>
+    <string name="hero_background_value_hint">URL hoặc giá trị màu</string>
+    <string name="browse_image">Chọn hình ảnh</string>
+    <string name="browse_image_summary">Chọn hình ảnh cục bộ từ thiết bị</string>
+    <string name="bg_type_network">Hình ảnh mạng</string>
+    <string name="bg_type_local">Hình ảnh cục bộ</string>
+    <string name="bg_type_color">Màu đặc</string>
+    <string name="bg_value_color_hint">Mã màu (ví dụ: #FF0000)</string>
+    <string name="bg_value_network_hint">URL hình ảnh (để trống để dùng API ngẫu nhiên)</string>
+    <string name="enter_color_code">Nhập mã màu</string>
+
+    <!-- Color Picker -->
+    <string name="color_solid_black">Màu đặc: Đen</string>
+    <string name="color_solid_white">Màu đặc: Trắng</string>
+    <string name="color_solid_red">Màu đặc: Đỏ</string>
+    <string name="color_solid_green">Màu đặc: Xanh lá</string>
+    <string name="color_solid_blue">Màu đặc: Xanh dương</string>
+    <string name="color_gradient_sunset">Chuyển màu: Hoàng hôn (Sunset)</string>
+    <string name="color_gradient_ocean">Chuyển màu: Đại dương (Ocean)</string>
+    <string name="color_gradient_lush">Chuyển màu: Xanh tươi (Lush)</string>
+    <string name="color_gradient_cool_blues">Chuyển màu: Xanh mát (Cool Blues)</string>
+    <string name="color_custom">Màu Hex tùy chỉnh…</string>
+
+    <!-- 2FA -->
+    <string name="login_2fa_title">Xác thực hai yếu tố (2FA)</string>
+    <string name="login_2fa_hint">Mã xác minh 6 chữ số</string>
+    <string name="login_2fa_confirm">Xác minh</string>
+    <string name="login_2fa_cancel">Hủy</string>
+    <string name="login_2fa_required">Cần xác thực hai yếu tố. Vui lòng nhập mã TOTP của bạn.</string>
+
+    <!-- QR Scan Login -->
+    <string name="scan_login_title">Đăng nhập QR</string>
+    <string name="scan_login_confirm_title">Xác nhận đăng nhập web</string>
+    <string name="scan_login_confirm_message">Bạn có muốn cho phép đăng nhập trên thiết bị:\n\n%s?</string>
+    <string name="scan_login_success">Đã xác nhận đăng nhập web!</string>
+    <string name="scan_login_failed">Đăng nhập thất bại: %s</string>
+    <string name="scan_login_invalid">Không tìm thấy mã QR hợp lệ</string>
+    <string name="scan_login_confirm_btn">Xác nhận đăng nhập</string>
+    <string name="scan_login_reject_btn">Từ chối đăng nhập</string>
+    <string name="scan_login_loading">Đang đăng nhập…</string>
+    <string name="scan_login_dev_info">Thông tin thiết bị</string>
+
+    <!-- Sync -->
+    <string name="sync_failed_login_tip">Đồng bộ thất bại: %s. Vui lòng thử lại trong \'Cấu hình\' (nút trên cùng bên phải).</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_toggle_short">Bật/Tắt Clash</string>
+    <string name="shortcut_toggle_long">Bật/tắt dịch vụ Clash</string>
+    <string name="shortcut_start_short">Khởi động Clash</string>
+    <string name="shortcut_start_long">Khởi động dịch vụ Clash</string>
+    <string name="shortcut_stop_short">Dừng Clash</string>
+    <string name="shortcut_stop_long">Dừng dịch vụ Clash</string>
 </resources>

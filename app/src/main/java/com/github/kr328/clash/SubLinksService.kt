@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.design.R as DesignR
 
 object SubLinksService {
@@ -55,14 +56,17 @@ object SubLinksService {
     }
 
     fun getServerUrl(context: Context): String? {
-        return BuildConfig.SUBLINKS_API_URL
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_SERVER, null) ?: BuildConfig.SUBLINKS_API_URL
     }
+
+    private fun cleanUrl(url: String): String = url.trim().removeSuffix("/")
 
     suspend fun login(context: Context, serverUrl: String, username: String, password: String, code: String? = null): LoginResult {
         return withContext(Dispatchers.IO) {
             try {
                 // Ensure server url doesn't end with slash
-                val cleanUrl = serverUrl.trim().removeSuffix("/")
+                val cleanUrl = cleanUrl(serverUrl)
                 val url = "$cleanUrl/api/client/auth/login"
                 
                 val deviceInfo = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})"
@@ -76,9 +80,8 @@ object SubLinksService {
                     .build()
 
                 val response = client.newCall(request).execute()
-                val responseBody = response.body?.string() ?: throw IOException("Empty response")
-                
-                // Try to parse JSON regardless of status code to find error message
+                val responseBody = response.use { it.body?.string() } ?: throw IOException("Empty response")
+
                 val loginResponse = try {
                     gson.fromJson(responseBody, LoginResponse::class.java)
                 } catch (e: Exception) {
@@ -86,7 +89,7 @@ object SubLinksService {
                 }
 
                 if (response.isSuccessful && loginResponse?.requires2FA == true) {
-                    return@withContext LoginResult.Requires2FA(loginResponse?.message ?: "该账户已启用两步验证，请提供 TOTP 验证码")
+                    return@withContext LoginResult.Requires2FA(loginResponse?.message ?: context.getString(DesignR.string.login_2fa_required))
                 }
 
                 if (!response.isSuccessful) {
@@ -95,24 +98,28 @@ object SubLinksService {
                 }
 
                 loginResponse ?: return@withContext LoginResult.Error("Invalid JSON response")
-                
+
                 val token = loginResponse.token ?: loginResponse.accessToken ?: loginResponse.access_token
                 val refreshToken = loginResponse.refreshToken
-                
+
                 if (token != null) {
                     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    prefs.edit()
+                    val editor = prefs.edit()
                         .putString(KEY_TOKEN, token)
-                        .putString(KEY_REFRESH_TOKEN, refreshToken)
                         .putString(KEY_SERVER, cleanUrl)
                         .putString(KEY_USER, gson.toJson(loginResponse.user))
-                        .apply()
-                    LoginResult.Success // Success
+                    if (refreshToken != null) {
+                        editor.putString(KEY_REFRESH_TOKEN, refreshToken)
+                    } else {
+                        editor.remove(KEY_REFRESH_TOKEN)
+                    }
+                    editor.apply()
+                    LoginResult.Success
                 } else {
                     LoginResult.Error(loginResponse.error ?: "Login failed: No token received")
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("SubLinksService", "Login failed", e)
                 LoginResult.Error(e.message ?: "Unknown error")
             }
         }
@@ -137,7 +144,7 @@ object SubLinksService {
                     .build()
 
                 val response = client.newCall(request).execute()
-                val responseBody = response.body?.string() ?: return@withContext false
+                val responseBody = response.use { it.body?.string() } ?: return@withContext false
                 
                 if (!response.isSuccessful) {
                     // Refresh token also expired, need to re-login
@@ -156,7 +163,7 @@ object SubLinksService {
                     false
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("SubLinksService", "Token refresh failed", e)
                 false
             }
         }
@@ -165,14 +172,15 @@ object SubLinksService {
     class AuthenticationException(message: String) : IOException(message)
 
     private suspend fun executeWithAuthRetry(context: Context, request: Request): okhttp3.Response {
-        var response = client.newCall(request).execute()
+        val response = client.newCall(request).execute()
         if (response.code == 401 || response.code == 403) {
+            response.close()
             if (refreshAccessToken(context)) {
                 val newToken = getToken(context) ?: throw AuthenticationException("Token refresh failed")
                 val retryRequest = request.newBuilder()
                     .header("Authorization", "Bearer $newToken")
                     .build()
-                response = client.newCall(retryRequest).execute()
+                return client.newCall(retryRequest).execute()
             } else {
                 throw AuthenticationException("Authentication failed: Token expired")
             }
@@ -197,10 +205,11 @@ object SubLinksService {
             val response = executeWithAuthRetry(context, request)
 
             if (!response.isSuccessful) {
+                response.close()
                 throw IOException("Fetch failed: HTTP ${response.code}")
             }
 
-            val responseBody = response.body?.string() ?: throw IOException("Empty response")
+            val responseBody = response.use { it.body?.string() } ?: throw IOException("Empty response")
             val subResponse = gson.fromJson(responseBody, SubscriptionsResponse::class.java)
 
             subResponse.subscriptions
@@ -229,7 +238,7 @@ object SubLinksService {
                 null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.w("SubLinksService", "Failed to parse username", e)
             null
         }
     }
@@ -250,7 +259,7 @@ object SubLinksService {
                 null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.w("SubLinksService", "Failed to parse avatar", e)
             null
         }
     }
@@ -275,7 +284,7 @@ object SubLinksService {
             val response = executeWithAuthRetry(context, request)
 
             if (response.isSuccessful) {
-                val body = response.body?.string()
+                val body = response.use { it.body?.string() }
                 if (!body.isNullOrEmpty()) {
                     // Validate JSON
                     try {
@@ -287,15 +296,17 @@ object SubLinksService {
                              } else {
                                  body
                              }
-                             
+
                              val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                              prefs.edit().putString(KEY_USER, userToSave).apply()
                              return@withContext true
                         }
                     } catch (e: Exception) {
-                        // Ignore invalid JSON
+                        Log.w("SubLinksService", "Failed to parse user info JSON", e)
                     }
                 }
+            } else {
+                response.close()
             }
             false
         }
@@ -309,11 +320,11 @@ object SubLinksService {
                     .get()
                     .build()
                 val response = client.newCall(request).execute()
-                val body = response.body?.string() ?: return@withContext null
+                val body = response.use { it.body?.string() } ?: return@withContext null
                 val hitokoto = gson.fromJson(body, HitokotoResponse::class.java)
                 hitokoto.hitokoto
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w("SubLinksService", "Failed to fetch hitokoto", e)
                 null
             }
         }
@@ -336,11 +347,10 @@ object SubLinksService {
                             .get()
                             .build()
                         val response = client.newCall(request).execute()
-                        val stream = response.body?.byteStream()
-                        if (stream != null) {
-                           android.graphics.BitmapFactory.decodeStream(stream)
-                        } else {
-                            null
+                        response.use { resp ->
+                            resp.body?.byteStream()?.use { stream ->
+                                android.graphics.BitmapFactory.decodeStream(stream)
+                            }
                         }
                     }
                     "local" -> {
@@ -352,7 +362,7 @@ object SubLinksService {
                                 android.graphics.BitmapFactory.decodeStream(stream)
                             }
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            Log.w("SubLinksService", "Failed to load local image", e)
                             null
                         }
                     }
@@ -384,13 +394,14 @@ object SubLinksService {
                                 bitmap
                             }
                         } catch (e: Exception) {
+                            Log.w("SubLinksService", "Failed to generate color bitmap", e)
                              null
                         }
                     }
                     else -> null
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w("SubLinksService", "Failed to fetch random image", e)
                 null
             }
         }
@@ -408,7 +419,7 @@ object SubLinksService {
             if (refreshToken != null && serverUrl != null) {
                 try {
                     // Ensure server url doesn't end with slash (redundant check but safe)
-                    val cleanUrl = serverUrl.trim().removeSuffix("/")
+                    val cleanUrl = cleanUrl(serverUrl)
                     val url = "$cleanUrl/api/client/auth/logout"
                     val json = gson.toJson(mapOf("refreshToken" to refreshToken))
                     val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
@@ -420,7 +431,7 @@ object SubLinksService {
                         .build()
 
                     val response = client.newCall(request).execute()
-                    val responseBody = response.body?.string()
+                    val responseBody = response.use { it.body?.string() }
                     
                     if (responseBody != null) {
                          try {
@@ -439,7 +450,7 @@ object SubLinksService {
                          result = false to "HTTP ${response.code}"
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e("SubLinksService", "Logout request failed", e)
                     result = false to e.message
                 }
             } else {
@@ -463,7 +474,7 @@ object SubLinksService {
                     }
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w("SubLinksService", "Failed to delete profiles on logout", e)
             }
             
             result
@@ -503,7 +514,7 @@ object SubLinksService {
             try {
                 val authToken = getToken(context) ?: return@withContext false
                 val serverUrl = getServerUrl(context) ?: return@withContext false
-                val cleanUrl = serverUrl.trim().removeSuffix("/")
+                val cleanUrl = cleanUrl(serverUrl)
                 val url = "$cleanUrl/api/client/auth/qr/reject"
 
                 val json = gson.toJson(QrRejectRequest(token))
@@ -517,7 +528,7 @@ object SubLinksService {
                     .build()
 
                 val response = executeWithAuthRetry(context, request)
-                response.isSuccessful
+                response.use { it.isSuccessful }
             } catch (e: Exception) {
                 false
             }
@@ -534,7 +545,13 @@ object SubLinksService {
         val query: String
     )
 
+    private val IP_PATTERN = Regex("""^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^[0-9a-fA-F:]+$""")
+
     suspend fun fetchIpInfo(ip: String): IpInfoResponse? {
+        if (!IP_PATTERN.matches(ip)) {
+            Log.w("SubLinksService", "Invalid IP address: $ip")
+            return null
+        }
         return withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder()
@@ -542,10 +559,10 @@ object SubLinksService {
                     .get()
                     .build()
                 val response = client.newCall(request).execute()
-                val body = response.body?.string() ?: return@withContext null
+                val body = response.use { it.body?.string() } ?: return@withContext null
                 gson.fromJson(body, IpInfoResponse::class.java)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w("SubLinksService", "Failed to fetch IP info", e)
                 null
             }
         }
@@ -564,86 +581,72 @@ object SubLinksService {
 
     suspend fun qrScan(context: Context, token: String): QrScanResult? {
         return withContext(Dispatchers.IO) {
-            try {
-                // No auth header needed for scan, just token in body? 
-                // Doc says: POST /api/client/auth/qr/scan
-                // Body: { "token": "..." }
-                // Response: { "success": true, "data": { "ip": "...", "ua": "..." } }
+            val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
+            val cleanUrl = cleanUrl(serverUrl)
+            val url = "$cleanUrl/api/client/auth/qr/scan"
 
-                val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
-                val cleanUrl = serverUrl.trim().removeSuffix("/")
-                val url = "$cleanUrl/api/client/auth/qr/scan"
-                
-                val json = gson.toJson(QrScanRequest(token))
-                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
-                
-                val request = Request.Builder()
-                    .url(url)
-                    .header("User-Agent", USER_AGENT)
-                    .post(body)
-                    .build()
+            val json = gson.toJson(QrScanRequest(token))
+            val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
 
-                val response = client.newCall(request).execute()
-                val responseBody = response.body?.string() ?: throw IOException("Empty response")
-                
-                if (!response.isSuccessful) {
-                    throw IOException("HTTP ${response.code}: $responseBody")
-                }
+            val request = Request.Builder()
+                .url(url)
+                .header("User-Agent", USER_AGENT)
+                .post(body)
+                .build()
 
-                val apiResponse = gson.fromJson(responseBody, QrScanResponse::class.java)
-                if (apiResponse.success && apiResponse.data != null) {
-                    apiResponse.data
-                } else {
-                    throw IOException(apiResponse.error ?: "Unknown error")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                throw e
+            val response = client.newCall(request).execute()
+            val responseBody = response.use { it.body?.string() } ?: throw IOException("Empty response")
+
+            if (!response.isSuccessful) {
+                throw IOException("HTTP ${response.code}: $responseBody")
+            }
+
+            val apiResponse = gson.fromJson(responseBody, QrScanResponse::class.java)
+            if (apiResponse.success && apiResponse.data != null) {
+                apiResponse.data
+            } else {
+                throw IOException(apiResponse.error ?: "Unknown error")
             }
         }
     }
 
     suspend fun qrConfirm(context: Context, token: String): Boolean {
         return withContext(Dispatchers.IO) {
-            try {
-                val authToken = getToken(context) ?: throw AuthenticationException("Not logged in")
-                val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
-                val cleanUrl = serverUrl.trim().removeSuffix("/")
+            val authToken = getToken(context) ?: throw AuthenticationException("Not logged in")
+            val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
+            val cleanUrl = cleanUrl(serverUrl)
 
-                val url = "$cleanUrl/api/client/auth/qr/confirm"
-                val json = gson.toJson(QrConfirmRequest(token))
-                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+            val url = "$cleanUrl/api/client/auth/qr/confirm"
+            val json = gson.toJson(QrConfirmRequest(token))
+            val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
 
-                val request = Request.Builder()
-                    .url(url)
-                    .header("Authorization", "Bearer $authToken")
-                    .header("User-Agent", USER_AGENT)
-                    .post(body)
-                    .build()
+            val request = Request.Builder()
+                .url(url)
+                .header("Authorization", "Bearer $authToken")
+                .header("User-Agent", USER_AGENT)
+                .post(body)
+                .build()
 
-                val response = executeWithAuthRetry(context, request)
+            val response = executeWithAuthRetry(context, request)
 
-                if (!response.isSuccessful) {
-                    val errBody = response.body?.string()
-                    throw IOException("HTTP ${response.code}: $errBody")
-                }
-
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                throw e
+            if (!response.isSuccessful) {
+                val errBody = response.use { it.body?.string() }
+                throw IOException("HTTP ${response.code}: $errBody")
             }
+
+            response.close()
+            true
         }
     }
 
     private fun generateUrlSuffix(url: String): String {
         return try {
             val digest = java.security.MessageDigest.getInstance("MD5")
-            digest.update(url.toByteArray())
+            digest.update(url.toByteArray(Charsets.UTF_8))
             val messageDigest = digest.digest()
             val hexString = StringBuilder()
-            for (activity in messageDigest) {
-                var h = Integer.toHexString(0xFF and activity.toInt())
+            for (b in messageDigest) {
+                var h = Integer.toHexString(0xFF and b.toInt())
                 while (h.length < 2) h = "0$h"
                 hexString.append(h)
             }
@@ -662,34 +665,22 @@ object SubLinksService {
             val usedNames = java.util.HashSet<String>()
 
             subscriptions.forEach { sub ->
-                var targetName = sub.name
-                
-                // If name collision in this batch, append URL-based suffix
-                while (usedNames.contains(targetName)) {
-                     // Check if it's already suffixed correctly? 
-                     // No, "while" implies we keep trying? 
-                     // But URL suffix is deterministic. If multiple have the same name and same URL hash? (Collision)
-                     // Unlikely for 5 chars but possible. BUT user asked specifically for strictly "URL generated 5 chars".
-                     // So we just add it once.
-                     // Wait, if 3 subs have same name and same URL, they are duplicates anyway? No user said "duplicate name".
-                     // If 3 subs have same name but diff URLs.
-                     // Sub A (Name X, URL A) -> targetName = X
-                     // Sub B (Name X, URL B) -> targetName = X -> match -> X_suffixB
-                     // Sub C (Name X, URL C) -> targetName = X -> match -> X_suffixC
-                     
-                     // Issue: What if Sub B and Sub C has collision in suffix? (Very rare).
-                     // But simpler logic:
-                     targetName = sub.name + "_" + generateUrlSuffix(sub.url)
-                     
-                     // If still collision (e.g. identical URL? or hash collision?), break loop to avoid infinite?
-                     // If key exists?
-                     if (usedNames.contains(targetName)) {
-                         // Still collision. Fallback to random or just leave it?
-                         // User said "use subscription link generate 5 chars". 
-                         // Assuming distinct URLs mean distinct suffixes usually. 
-                         // Let's assume distinct. If match, break?
-                         break
-                     }
+                val targetName = if (usedNames.contains(sub.name)) {
+                    val suffixed = sub.name + "_" + generateUrlSuffix(sub.url)
+                    if (usedNames.contains(suffixed)) {
+                        // Rare: hash collision, append counter
+                        var counter = 2
+                        var candidate = "${suffixed}_$counter"
+                        while (usedNames.contains(candidate) && counter < 100) {
+                            counter++
+                            candidate = "${suffixed}_$counter"
+                        }
+                        candidate
+                    } else {
+                        suffixed
+                    }
+                } else {
+                    sub.name
                 }
                 usedNames.add(targetName)
                 
