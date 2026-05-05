@@ -17,6 +17,12 @@ object SubLinksService {
         .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
         .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
         .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+                .header("Accept-Language", java.util.Locale.getDefault().language)
+                .build()
+            chain.proceed(request)
+        }
         .build()
     private val gson = Gson()
     private const val PREFS_NAME = "sublinks_prefs"
@@ -205,8 +211,11 @@ object SubLinksService {
             val response = executeWithAuthRetry(context, request)
 
             if (!response.isSuccessful) {
-                response.close()
-                throw IOException("Fetch failed: HTTP ${response.code}")
+                val errBody = response.use { it.body?.string() }
+                val serverMsg = try {
+                    gson.fromJson(errBody, com.google.gson.JsonObject::class.java)?.get("error")?.asString
+                } catch (_: Exception) { null }
+                throw IOException(serverMsg ?: errBody ?: "Fetch failed: HTTP ${response.code}")
             }
 
             val responseBody = response.use { it.body?.string() } ?: throw IOException("Empty response")
@@ -504,16 +513,16 @@ object SubLinksService {
     @androidx.annotation.Keep
     data class QrConfirmRequest(val token: String)
     @androidx.annotation.Keep
-    data class QrConfirmResponse(val success: Boolean, val message: String?)
+    data class QrConfirmResponse(val success: Boolean, val message: String?, val error: String?)
 
     @androidx.annotation.Keep
     data class QrRejectRequest(val token: String)
 
-    suspend fun qrReject(context: Context, token: String): Boolean {
+    suspend fun qrReject(context: Context, token: String): Pair<Boolean, String?> {
         return withContext(Dispatchers.IO) {
             try {
-                val authToken = getToken(context) ?: return@withContext false
-                val serverUrl = getServerUrl(context) ?: return@withContext false
+                val authToken = getToken(context) ?: return@withContext false to null
+                val serverUrl = getServerUrl(context) ?: return@withContext false to null
                 val cleanUrl = cleanUrl(serverUrl)
                 val url = "$cleanUrl/api/client/auth/qr/reject"
 
@@ -528,9 +537,22 @@ object SubLinksService {
                     .build()
 
                 val response = executeWithAuthRetry(context, request)
-                response.use { it.isSuccessful }
+                val responseBody = response.use { it.body?.string() }
+
+                if (!response.isSuccessful) {
+                    val apiError = try {
+                        gson.fromJson(responseBody, QrConfirmResponse::class.java)
+                    } catch (_: Exception) { null }
+                    return@withContext false to (apiError?.error ?: responseBody)
+                }
+
+                val apiResponse = try {
+                    gson.fromJson(responseBody, QrConfirmResponse::class.java)
+                } catch (_: Exception) { null }
+
+                (apiResponse?.success ?: true) to (apiResponse?.message)
             } catch (e: Exception) {
-                false
+                false to e.message
             }
         }
     }
@@ -546,23 +568,45 @@ object SubLinksService {
     )
 
     private val IP_PATTERN = Regex("""^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^[0-9a-fA-F:]+$""")
+    private val PRIVATE_IP_PATTERNS = listOf(
+        Regex("""^10\."""),                      // 10.0.0.0/8
+        Regex("""^172\.(1[6-9]|2\d|3[01])\."""), // 172.16.0.0/12
+        Regex("""^192\.168\."""),                 // 192.168.0.0/16
+        Regex("""^127\."""),                      // 127.0.0.0/8 (loopback)
+        Regex("""^0\."""),                        // 0.0.0.0/8
+        Regex("""^169\.254\."""),                // 169.254.0.0/16 (link-local)
+        Regex("""^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\."""), // 100.64.0.0/10 (CGNAT)
+        Regex("""^::1$"""),                       // IPv6 loopback
+        Regex("""^[fF][cCdD]"""),                 // IPv6 unique local (fc00::/7)
+        Regex("""^[fF][eE][89aAbB]""")           // IPv6 link-local (fe80::/10)
+    )
+
+    fun isPrivateIp(ip: String): Boolean {
+        return PRIVATE_IP_PATTERNS.any { it.containsMatchIn(ip) }
+    }
 
     suspend fun fetchIpInfo(ip: String): IpInfoResponse? {
+        Log.d("fetchIpInfo called with ip: $ip")
         if (!IP_PATTERN.matches(ip)) {
             Log.w("Invalid IP address: $ip")
+            return null
+        }
+        if (isPrivateIp(ip)) {
+            Log.d("Skipping ip-api.com for private IP: $ip")
             return null
         }
         return withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder()
-                    .url("https://ip-api.com/json/$ip?lang=zh-CN")
+                    .url("http://ip-api.com/json/$ip?lang=zh-CN")
                     .get()
                     .build()
                 val response = client.newCall(request).execute()
                 val body = response.use { it.body?.string() } ?: return@withContext null
+                Log.d("ip-api.com response for $ip: $body")
                 gson.fromJson(body, IpInfoResponse::class.java)
             } catch (e: Exception) {
-                Log.w("Failed to fetch IP info", e)
+                Log.w("Failed to fetch IP info for $ip", e)
                 null
             }
         }
@@ -610,7 +654,7 @@ object SubLinksService {
         }
     }
 
-    suspend fun qrConfirm(context: Context, token: String): Boolean {
+    suspend fun qrConfirm(context: Context, token: String): Pair<Boolean, String?> {
         return withContext(Dispatchers.IO) {
             val authToken = getToken(context) ?: throw AuthenticationException("Not logged in")
             val serverUrl = getServerUrl(context) ?: throw IOException("No server URL")
@@ -628,14 +672,20 @@ object SubLinksService {
                 .build()
 
             val response = executeWithAuthRetry(context, request)
+            val responseBody = response.use { it.body?.string() }
 
             if (!response.isSuccessful) {
-                val errBody = response.use { it.body?.string() }
-                throw IOException("HTTP ${response.code}: $errBody")
+                val apiError = try {
+                    gson.fromJson(responseBody, QrConfirmResponse::class.java)
+                } catch (_: Exception) { null }
+                throw IOException(apiError?.error ?: responseBody ?: "HTTP ${response.code}")
             }
 
-            response.close()
-            true
+            val apiResponse = try {
+                gson.fromJson(responseBody, QrConfirmResponse::class.java)
+            } catch (_: Exception) { null }
+
+            (apiResponse?.success ?: true) to (apiResponse?.message)
         }
     }
 

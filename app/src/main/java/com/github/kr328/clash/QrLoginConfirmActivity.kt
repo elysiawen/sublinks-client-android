@@ -48,10 +48,13 @@ class QrLoginConfirmActivity : AppCompatActivity() {
                     val location = "${ipInfo.city}, ${ipInfo.regionName}"
                     val isp = ipInfo.isp
                     textLocation.text = "$location\n$isp"
+                } else if (SubLinksService.isPrivateIp(ip)) {
+                    textLocation.text = "Local Network"
                 } else {
                     textLocation.text = "Unknown Location"
                 }
             } catch (e: Exception) {
+                Log.w("Failed to fetch IP info for $ip", e)
                 textLocation.text = "Failed to load"
             }
         }
@@ -63,12 +66,12 @@ class QrLoginConfirmActivity : AppCompatActivity() {
                 btnConfirm.text = getString(DesignR.string.scan_login_loading)
                 (btnConfirm as? com.google.android.material.button.MaterialButton)?.icon = null
                 try {
-                    val success = SubLinksService.qrConfirm(this@QrLoginConfirmActivity, token)
+                    val (success, message) = SubLinksService.qrConfirm(this@QrLoginConfirmActivity, token)
                     if (success) {
-                        Toast.makeText(this@QrLoginConfirmActivity, DesignR.string.scan_login_success, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@QrLoginConfirmActivity, message ?: getString(DesignR.string.scan_login_success), Toast.LENGTH_SHORT).show()
                         finish()
                     } else {
-                        Toast.makeText(this@QrLoginConfirmActivity, getString(DesignR.string.scan_login_failed, "Failed"), Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@QrLoginConfirmActivity, getString(DesignR.string.scan_login_failed, message ?: "Failed"), Toast.LENGTH_LONG).show()
                         btnConfirm.text = originalText
                         (btnConfirm as? com.google.android.material.button.MaterialButton)?.setIconResource(DesignR.drawable.ic_outline_check_circle)
                         btnConfirm.isEnabled = true

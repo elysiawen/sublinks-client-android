@@ -95,11 +95,11 @@ class MainActivity : BaseActivity<MainDesign>() {
     private fun confirmQrLogin(token: String) {
         launch {
              try {
-                 val success = SubLinksService.qrConfirm(this@MainActivity, token)
+                 val (success, message) = SubLinksService.qrConfirm(this@MainActivity, token)
                  if (success) {
-                     design?.showToast(R.string.scan_login_success, ToastDuration.Short)
+                     design?.showToast(message ?: getString(R.string.scan_login_success), ToastDuration.Short)
                  } else {
-                     design?.showToast(getString(R.string.scan_login_failed, "Failed"), ToastDuration.Long)
+                     design?.showToast(getString(R.string.scan_login_failed, message ?: "Failed"), ToastDuration.Long)
                  }
              } catch (e: Exception) {
                  design?.showToast(getString(R.string.scan_login_failed, e.message), ToastDuration.Long)
