@@ -855,7 +855,7 @@ object SubLinksService {
                     )
                 }
 
-                if (latestVersion != BuildConfig.VERSION_NAME) {
+                if (isNewerVersion(latestVersion, BuildConfig.VERSION_NAME)) {
                     val fullUrl = if (downloadUrl.startsWith("http")) downloadUrl
                         else "${BuildConfig.UPDATE_API_URL}$downloadUrl"
                     UpdateResult.Available(latestVersion, fileSize, fullUrl)
@@ -867,5 +867,18 @@ object SubLinksService {
                 UpdateResult.Error("${e.javaClass.simpleName}: ${e.message}")
             }
         }
+    }
+
+    private fun isNewerVersion(latest: String, current: String): Boolean {
+        val latestParts = latest.split(".").mapNotNull { it.toIntOrNull() }
+        val currentParts = current.split(".").mapNotNull { it.toIntOrNull() }
+        val maxLen = maxOf(latestParts.size, currentParts.size)
+        for (i in 0 until maxLen) {
+            val l = latestParts.getOrElse(i) { 0 }
+            val c = currentParts.getOrElse(i) { 0 }
+            if (l > c) return true
+            if (l < c) return false
+        }
+        return false
     }
 }
