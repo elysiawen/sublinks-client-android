@@ -12,9 +12,7 @@ import coil.disk.DiskCache
 import com.github.kr328.clash.common.Global
 import kotlinx.coroutines.launch
 import com.github.kr328.clash.common.compat.currentProcessName
-import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.design.store.UiStore
 import com.github.kr328.clash.remote.Remote
 import com.github.kr328.clash.service.util.sendServiceRecreated
 import com.github.kr328.clash.util.clashDir
@@ -56,7 +54,6 @@ class MainApplication : Application(), ImageLoaderFactory {
 
         if (processName == packageName) {
             Remote.launch()
-            setupShortcuts()
         } else {
             sendServiceRecreated()
         }
