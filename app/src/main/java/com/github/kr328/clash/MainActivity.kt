@@ -28,7 +28,7 @@ import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.design.R
+import com.github.kr328.clash.design.R as DesignR
 import kotlinx.coroutines.launch
 
 import io.github.g00fy2.quickie.QRResult
@@ -45,17 +45,17 @@ class MainActivity : BaseActivity<MainDesign>() {
                         val token = content.removePrefix("sublinks://login/")
                         handleQrLogin(token)
                     } else {
-                        design?.showToast(R.string.scan_login_invalid, ToastDuration.Short)
+                        design?.showToast(DesignR.string.scan_login_invalid, ToastDuration.Short)
                     }
                 }
                 is QRResult.QRUserCanceled -> Unit // Do nothing
                 is QRResult.QRMissingPermission -> design?.showToast(
-                    R.string.import_from_qr_no_permission,
+                    DesignR.string.import_from_qr_no_permission,
                     ToastDuration.Long
                 )
 
                 is Exception -> design?.showToast(
-                    R.string.import_from_qr_exception,
+                    DesignR.string.import_from_qr_exception,
                     ToastDuration.Long
                 )
 
@@ -87,12 +87,12 @@ class MainActivity : BaseActivity<MainDesign>() {
                     }
                     startActivity(intent)
                 } else {
-                    design?.showToast(getString(R.string.scan_login_failed, "Unknown error"), ToastDuration.Long)
+                    design?.showToast(getString(DesignR.string.scan_login_failed, "Unknown error"), ToastDuration.Long)
                 }
             } catch (e: Exception) {
                 loading.dismiss()
                 Log.w("QR scan failed", e)
-                design?.showToast(getString(R.string.scan_login_failed, e.message), ToastDuration.Long)
+                design?.showToast(getString(DesignR.string.scan_login_failed, e.message), ToastDuration.Long)
             }
         }
     }
@@ -102,12 +102,12 @@ class MainActivity : BaseActivity<MainDesign>() {
              try {
                  val (success, message) = SubLinksService.qrConfirm(this@MainActivity, token)
                  if (success) {
-                     design?.showToast(message ?: getString(R.string.scan_login_success), ToastDuration.Short)
+                     design?.showToast(message ?: getString(DesignR.string.scan_login_success), ToastDuration.Short)
                  } else {
-                     design?.showToast(getString(R.string.scan_login_failed, message ?: "Failed"), ToastDuration.Long)
+                     design?.showToast(getString(DesignR.string.scan_login_failed, message ?: "Failed"), ToastDuration.Long)
                  }
              } catch (e: Exception) {
-                 design?.showToast(getString(R.string.scan_login_failed, e.message), ToastDuration.Long)
+                 design?.showToast(getString(DesignR.string.scan_login_failed, e.message), ToastDuration.Long)
              }
         }
     }
@@ -148,13 +148,13 @@ class MainActivity : BaseActivity<MainDesign>() {
                   try {
                       if (autoSync) {
                           withContext(Dispatchers.Main) {
-                              android.widget.Toast.makeText(this@MainActivity, getString(R.string.syncing_subscriptions), android.widget.Toast.LENGTH_SHORT).show()
+                              android.widget.Toast.makeText(this@MainActivity, getString(DesignR.string.syncing_subscriptions), android.widget.Toast.LENGTH_SHORT).show()
                           }
                           SubLinksService.sync(this@MainActivity) { 
                                // Silent progress or log
                           }
                           withContext(Dispatchers.Main) {
-                              android.widget.Toast.makeText(this@MainActivity, getString(R.string.sync_completed), android.widget.Toast.LENGTH_SHORT).show()
+                              android.widget.Toast.makeText(this@MainActivity, getString(DesignR.string.sync_completed), android.widget.Toast.LENGTH_SHORT).show()
                           }
                       }
                       
@@ -165,7 +165,7 @@ class MainActivity : BaseActivity<MainDesign>() {
                       }
                   } catch (e: SubLinksService.AuthenticationException) {
                       withContext(Dispatchers.Main) {
-                          android.widget.Toast.makeText(this@MainActivity, getString(R.string.token_expired), android.widget.Toast.LENGTH_LONG).show()
+                          android.widget.Toast.makeText(this@MainActivity, getString(DesignR.string.token_expired), android.widget.Toast.LENGTH_LONG).show()
                       }
                       SubLinksService.logout(this@MainActivity)
                       withContext(Dispatchers.Main) {
@@ -175,7 +175,7 @@ class MainActivity : BaseActivity<MainDesign>() {
                   } catch (e: Exception) {
                       Log.w("Sync failed", e)
                       withContext(Dispatchers.Main) {
-                          android.widget.Toast.makeText(this@MainActivity, getString(R.string.sync_failed, e.message), android.widget.Toast.LENGTH_LONG).show()
+                          android.widget.Toast.makeText(this@MainActivity, getString(DesignR.string.sync_failed, e.message), android.widget.Toast.LENGTH_LONG).show()
                       }
                   }
               }
@@ -187,7 +187,7 @@ class MainActivity : BaseActivity<MainDesign>() {
         launch {
              // Fetch Hitokoto
              val hitokoto = SubLinksService.fetchHitokoto()
-             design.setHitokoto(hitokoto ?: getString(R.string.hitokoto_failed))
+             design.setHitokoto(hitokoto ?: getString(DesignR.string.hitokoto_failed))
         }
 
         if (SubLinksService.isUpdateEnabled()) {
@@ -242,26 +242,26 @@ class MainActivity : BaseActivity<MainDesign>() {
                             scanQr.launch(null)
                         MainDesign.Request.Logout -> {
                             androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
-                                .setTitle(R.string.logout_confirmation_title)
-                                .setMessage(R.string.logout_confirmation_message)
-                                .setPositiveButton(R.string.ok) { _, _ ->
+                                .setTitle(DesignR.string.logout_confirmation_title)
+                                .setMessage(DesignR.string.logout_confirmation_message)
+                                .setPositiveButton(DesignR.string.ok) { _, _ ->
                                     launch {
                                         withContext(Dispatchers.Main) {
-                                             android.widget.Toast.makeText(this@MainActivity, R.string.logging_out, android.widget.Toast.LENGTH_SHORT).show()
+                                             android.widget.Toast.makeText(this@MainActivity, DesignR.string.logging_out, android.widget.Toast.LENGTH_SHORT).show()
                                         }
                                         val (success, message) = SubLinksService.logout(this@MainActivity)
                                         withContext(Dispatchers.Main) {
                                             if (!message.isNullOrEmpty()) {
                                                 android.widget.Toast.makeText(this@MainActivity, message, android.widget.Toast.LENGTH_SHORT).show()
                                             } else {
-                                                android.widget.Toast.makeText(this@MainActivity, R.string.logout_success, android.widget.Toast.LENGTH_SHORT).show()
+                                                android.widget.Toast.makeText(this@MainActivity, DesignR.string.logout_success, android.widget.Toast.LENGTH_SHORT).show()
                                             }
                                             startActivity(android.content.Intent(this@MainActivity, LoginActivity::class.java))
                                             finish()
                                         }
                                     }
                                 }
-                                .setNegativeButton(R.string.cancel, null)
+                                .setNegativeButton(DesignR.string.cancel, null)
                                 .show()
                         }
                         MainDesign.Request.RefreshImage -> {

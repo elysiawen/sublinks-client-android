@@ -10,6 +10,8 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import com.github.kr328.clash.common.Global
+import com.github.kr328.clash.common.constants.Intents
+import com.github.kr328.clash.design.store.UiStore
 import kotlinx.coroutines.launch
 import com.github.kr328.clash.common.compat.currentProcessName
 import com.github.kr328.clash.common.log.Log
