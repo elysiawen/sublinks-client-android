@@ -4,158 +4,152 @@
 
 [![License](https://img.shields.io/github/license/MetaCubeX/ClashMetaForAndroid)](https://github.com/MetaCubeX/ClashMetaForAndroid/blob/Meta/LICENSE)
 
-基于 [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) 的 SubLinks 订阅管理客户端
+A SubLinks subscription management client based on [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid)
+
+[中文](README_zh.md)
 
 </div>
 
-## ✨ 特性
+## Features
 
-### 🔐 SubLinks 集成
-- **一键登录**：使用 SubLinks 账号直接登录
-- **自动同步**：订阅配置自动同步到设备
-- **智能管理**：自动处理订阅更新和冲突
+### SubLinks Integration
+- **One-tap Login**: Sign in directly with your SubLinks account
+- **Auto Sync**: Subscription configs automatically sync to your device
+- **Smart Management**: Handles subscription updates and conflicts automatically
 
-### 🎨 个性化定制
-- **Hero 卡片背景**：
-  - 网络图片（随机 API 或自定义 URL）
-  - 本地图片选择
-  - 纯色/渐变色（内置色板 + 自定义）
-- **时段问候**：根据时间显示不同的问候语
-- **一言集成**：每日随机一言展示
+### Personalization
+- **Hero Card Background**:
+  - Online images (random API or custom URL)
+  - Local image picker
+  - Solid color / gradient (built-in palette + custom)
+- **Time-based Greeting**: Greeting messages that change throughout the day
+- **Hitokoto**: Daily random quote display
 
-### 🚀 核心功能
-- 完整的 Clash Meta 内核支持
-- 规则集管理
-- 配置文件编辑
-- 实时流量监控
-- 延迟测试
+### Core
+- Full Clash Meta kernel support
+- Rule set management
+- Config file editor
+- Real-time traffic monitoring
+- Latency testing
 
-## 📱 截图
+## Screenshots
 
 <div align="center">
 
-| 登录界面 | 主界面 | 个性化设置 |
+| Login | Main | Settings |
 |:---:|:---:|:---:|
 | ![Login](screenshots/login.png) | ![Main](screenshots/main.png) | ![Settings](screenshots/settings.png) |
 
 </div>
 
-## 🔧 构建
+## Building
 
-### 环境要求
-- Android Studio Hedgehog (2023.1.1) 或更高版本
+### Prerequisites
+- Android Studio Hedgehog (2023.1.1) or later
 - JDK 21
 - Android SDK (API 35)
-- Go 1.25+ （用于编译 Clash Meta 内核）
+- Go 1.25+ (for compiling the Clash Meta kernel)
 
-### 配置
+### Setup
 
-1. **克隆仓库**
+1. **Clone the repo**
    ```bash
    git clone https://github.com/elysiawen/sublinks-client-android.git
    cd sublinks-client-android
    ```
 
-2. **配置 API 地址**
-   
-   在项目根目录创建 `local.properties` 文件：
+2. **Configure API endpoints**
+
+   Create a `local.properties` file in the project root:
    ```properties
-   # SubLinks API 配置
+   # SubLinks API configuration
    SUBLINKS_APIURL_RELEASE=https://your-sublinks-server.com/
    SUBLINKS_APIURL_DEBUG=http://192.168.1.100:3000/
-   
-   # Android SDK 路径（如果需要）
+
+   # Android SDK path (if needed)
    sdk.dir=C\:\\Users\\YourName\\AppData\\Local\\Android\\Sdk
    ```
 
-3. **生成签名密钥**（可选，用于 Release 构建）
+3. **Generate a signing key** (optional, for release builds)
    ```bash
    keytool -genkey -v -keystore release.keystore -alias key0 -keyalg RSA -keysize 2048 -validity 10000
    ```
-   
-   创建 `signing.properties`：
+
+   Create `signing.properties`:
    ```properties
    keystore.password=your_password
    key.alias=key0
    key.password=your_password
    ```
 
-4. **构建**
+4. **Build**
    ```bash
-   # Debug 版本
+   # Debug
    ./gradlew assembleMetaDebug
-   
-   # Release 版本
+
+   # Release
    ./gradlew assembleMetaRelease
    ```
 
-生成的 APK 位于：`app/build/outputs/apk/meta/release/`
+Output APKs are located at: `app/build/outputs/apk/meta/release/`
 
-## 🔄 同步上游更新
+## Syncing Upstream Updates
 
-本项目基于 ClashMetaForAndroid，可以定期同步上游更新：
+This project is based on ClashMetaForAndroid. To sync upstream changes:
 
 ```bash
-# 添加上游仓库（仅需一次）
+# Add upstream remote (one-time)
 git remote add upstream https://github.com/MetaCubeX/ClashMetaForAndroid.git
 
-# 同步更新
+# Sync updates
 git fetch upstream
 git checkout -b sync-upstream-$(date +%Y%m%d)
-git merge upstream/meta
+git merge upstream/main
 
-# 解决冲突后
-git checkout meta
+# After resolving conflicts
+git checkout sublinks
 git merge sync-upstream-$(date +%Y%m%d)
-git push origin meta
+git push origin sublinks
 ```
 
-详细说明请参考 [上游同步指南](docs/UPSTREAM_SYNC.md)
+See [Upstream Sync Guide](docs/UPSTREAM_SYNC.md) for details.
 
-## 📝 与上游的主要差异
+## Key Differences from Upstream
 
-### 修改的文件
-- `build.gradle.kts` - 应用 ID 和版本配置
-- `app/build.gradle.kts` - API URL 配置和 APK 命名
-- `app/src/main/java/com/github/kr328/clash/SubLinksService.kt` - SubLinks API 集成
-- `app/src/main/java/com/github/kr328/clash/LoginActivity.kt` - 登录界面
-- `design/src/main/res/` - UI 资源和字符串
+### Modified Files
+- `build.gradle.kts` - App ID and version config
+- `app/build.gradle.kts` - API URL config and APK naming
+- `app/src/main/java/com/github/kr328/clash/SubLinksService.kt` - SubLinks API integration
+- `app/src/main/java/com/github/kr328/clash/LoginActivity.kt` - Login screen
+- `design/src/main/res/` - UI resources and strings
 
-### 新增的功能
-- SubLinks 账号系统集成
-- 订阅自动同步
-- Hero 卡片个性化
-- 时段问候和一言
+### Added Features
+- SubLinks account system integration
+- Automatic subscription sync
+- Hero card personalization
+- Time-based greeting and Hitokoto quotes
 
-## 🤝 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and pull requests are welcome!
 
-### 开发指南
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+### Development Workflow
+1. Fork this repo
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📄 许可证
+## License
 
-本项目基于 GPL-3.0 许可证开源，详见 [LICENSE](LICENSE) 文件。
+This project is licensed under GPL-3.0. See [LICENSE](LICENSE) for details.
 
-## 🙏 致谢
+## Acknowledgments
 
-- [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) - 上游项目
-- [Clash Meta](https://github.com/MetaCubeX/mihomo) - 核心引擎
-- [一言](https://hitokoto.cn/) - 一言 API
+- [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) - Upstream project
+- [Clash Meta (mihomo)](https://github.com/MetaCubeX/mihomo) - Core engine
+- [Hitokoto](https://hitokoto.cn/) - Hitokoto API
 
-## 📮 联系方式
+## Contact
 
-- Issue: [GitHub Issues](https://github.com/elysiawen/sublinks-client-android/issues)
-- Email: your.email@example.com
-
----
-
-<div align="center">
-
-
-</div>
+- Issues: [GitHub Issues](https://github.com/elysiawen/sublinks-client-android/issues)
