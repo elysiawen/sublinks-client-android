@@ -164,6 +164,18 @@
     <string name="login_2fa_cancel">取消</string>
     <string name="login_2fa_required">该账户已启用两步验证，请提供 TOTP 验证码。</string>
 
+    <string name="login_method_browser">打开浏览器登录</string>
+    <string name="login_method_password">账号密码登录</string>
+    <string name="login_browser_desc">点击下方按钮，在浏览器中完成登录。\n支持 Passkey、OAuth、两步验证等方式。</string>
+    <string name="login_browser_button">打开浏览器登录</string>
+    <string name="login_browser_waiting">等待浏览器授权…</string>
+    <string name="login_browser_opening">正在打开浏览器…</string>
+    <string name="login_browser_expired">设备码已过期，请重试</string>
+    <string name="login_browser_denied">授权被拒绝</string>
+    <string name="login_browser_countdown">剩余 %d 秒</string>
+    <string name="login_browser_cancel">取消</string>
+    <string name="login_browser_error">登录失败：%s</string>
+
     <string name="syncing_subscriptions">正在同步订阅...</string>
     <string name="sync_completed">同步完成</string>
     <string name="sync_failed">同步失败: %s</string>

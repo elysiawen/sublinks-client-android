@@ -689,6 +689,108 @@ object SubLinksService {
         }
     }
 
+    // ── Device Code Flow (RFC 8628) ──────────────────────────────
+
+    @androidx.annotation.Keep
+    data class DeviceAuthorizeRequest(val deviceInfo: String)
+    @androidx.annotation.Keep
+    data class DeviceAuthorizeResponse(val deviceCode: String, val verificationUri: String, val expiresIn: Int, val interval: Int)
+    @androidx.annotation.Keep
+    data class DeviceTokenRequest(val deviceCode: String)
+    @androidx.annotation.Keep
+    data class DeviceTokenResponse(val success: Boolean?, val accessToken: String?, val refreshToken: String?, val user: Any?, val error: String?)
+
+    @androidx.annotation.Keep
+    data class DeviceErrorResponse(val error: String?)
+
+    sealed class DeviceAuthorizeResult {
+        data class Success(val response: DeviceAuthorizeResponse) : DeviceAuthorizeResult()
+        data class Error(val message: String) : DeviceAuthorizeResult()
+    }
+
+    suspend fun deviceAuthorize(context: Context): DeviceAuthorizeResult {
+        return withContext(Dispatchers.IO) {
+            try {
+                val serverUrl = getServerUrl(context) ?: return@withContext DeviceAuthorizeResult.Error("Server URL not configured")
+                val cleanUrl = cleanUrl(serverUrl)
+                val url = "$cleanUrl/api/client/auth/device/authorize"
+
+                val deviceInfo = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})"
+                val json = gson.toJson(DeviceAuthorizeRequest(deviceInfo))
+                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", USER_AGENT)
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val responseBody = response.use { it.body?.string() } ?: return@withContext DeviceAuthorizeResult.Error("Empty response")
+
+                if (!response.isSuccessful) {
+                    val errorMsg = try {
+                        gson.fromJson(responseBody, DeviceErrorResponse::class.java)?.error
+                    } catch (_: Exception) { null }
+                    Log.e("Device authorize failed: HTTP ${response.code}: $responseBody")
+                    return@withContext DeviceAuthorizeResult.Error(errorMsg ?: "HTTP ${response.code}")
+                }
+
+                val authResponse = gson.fromJson(responseBody, DeviceAuthorizeResponse::class.java)
+                if (authResponse != null) {
+                    DeviceAuthorizeResult.Success(authResponse)
+                } else {
+                    DeviceAuthorizeResult.Error("Invalid response")
+                }
+            } catch (e: Exception) {
+                Log.e("Device authorize failed", e)
+                DeviceAuthorizeResult.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+
+    suspend fun devicePollToken(context: Context, deviceCode: String): DeviceTokenResponse? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val serverUrl = getServerUrl(context) ?: return@withContext null
+                val cleanUrl = cleanUrl(serverUrl)
+                val url = "$cleanUrl/api/client/auth/device/token"
+
+                val json = gson.toJson(DeviceTokenRequest(deviceCode))
+                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", USER_AGENT)
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val responseBody = response.use { it.body?.string() } ?: return@withContext null
+
+                gson.fromJson(responseBody, DeviceTokenResponse::class.java)
+            } catch (e: Exception) {
+                Log.e("Device token poll failed", e)
+                null
+            }
+        }
+    }
+
+    fun saveDeviceAuthToken(context: Context, accessToken: String, refreshToken: String?, user: Any?) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val serverUrl = getServerUrl(context) ?: ""
+        val editor = prefs.edit()
+            .putString(KEY_TOKEN, accessToken)
+            .putString(KEY_SERVER, cleanUrl(serverUrl))
+            .putString(KEY_USER, gson.toJson(user))
+        if (refreshToken != null) {
+            editor.putString(KEY_REFRESH_TOKEN, refreshToken)
+        } else {
+            editor.remove(KEY_REFRESH_TOKEN)
+        }
+        editor.apply()
+    }
+
     private fun generateUrlSuffix(url: String): String {
         return try {
             val digest = java.security.MessageDigest.getInstance("MD5")
