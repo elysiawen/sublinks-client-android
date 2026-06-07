@@ -741,12 +741,12 @@ object SubLinksService {
 
                 if (existing != null) {
                     if (existing.source != sub.url || existing.name != targetName) {
-                        patch(existing.uuid, targetName, sub.url, 0)
+                        patch(existing.uuid, targetName, sub.url, 0, null)
                         commit(existing.uuid)
                         update(existing.uuid)
                     }
                 } else {
-                    val uuid = create(com.github.kr328.clash.service.model.Profile.Type.Url, targetName, sub.url)
+                    val uuid = create(com.github.kr328.clash.service.model.Profile.Type.Url, targetName, sub.url, null)
                     commit(uuid)
                     update(uuid)
 
