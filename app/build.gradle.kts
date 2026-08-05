@@ -25,6 +25,8 @@ android {
         val updateEnabled = localProperties.getProperty("UPDATE_ENABLED")?.toBoolean() ?: false
         val updateApiUrl = localProperties.getProperty("UPDATE_API_URL") ?: ""
         val updateAppName = localProperties.getProperty("UPDATE_APP_NAME") ?: ""
+        val heartbeatEnabled = localProperties.getProperty("HEARTBEAT_ENABLED")?.toBoolean() ?: false
+        val heartbeatInterval = localProperties.getProperty("HEARTBEAT_INTERVAL")?.toIntOrNull() ?: 60
 
         getByName("release") {
             // Read specific key first, fallback to empty if not set
@@ -33,6 +35,13 @@ android {
             buildConfigField("boolean", "UPDATE_ENABLED", updateEnabled.toString())
             buildConfigField("String", "UPDATE_API_URL", "\"$updateApiUrl\"")
             buildConfigField("String", "UPDATE_APP_NAME", "\"$updateAppName\"")
+            // Heartbeat config
+            val heartbeatApiUrl = localProperties.getProperty("HEARTBEAT_APIURL_RELEASE") ?: ""
+            val heartbeatApiKey = localProperties.getProperty("HEARTBEAT_APIKEY_RELEASE") ?: ""
+            buildConfigField("boolean", "HEARTBEAT_ENABLED", heartbeatEnabled.toString())
+            buildConfigField("int", "HEARTBEAT_INTERVAL", heartbeatInterval.toString())
+            buildConfigField("String", "HEARTBEAT_API_URL", "\"$heartbeatApiUrl\"")
+            buildConfigField("String", "HEARTBEAT_API_KEY", "\"$heartbeatApiKey\"")
         }
         getByName("debug") {
             // Read specific key first, fallback to default
@@ -42,6 +51,13 @@ android {
             buildConfigField("boolean", "UPDATE_ENABLED", updateEnabled.toString())
             buildConfigField("String", "UPDATE_API_URL", "\"$updateApiUrl\"")
             buildConfigField("String", "UPDATE_APP_NAME", "\"$updateAppName\"")
+            // Heartbeat config
+            val heartbeatApiUrl = localProperties.getProperty("HEARTBEAT_APIURL_DEBUG") ?: "http://127.0.0.1:8787"
+            val heartbeatApiKey = localProperties.getProperty("HEARTBEAT_APIKEY_DEBUG") ?: ""
+            buildConfigField("boolean", "HEARTBEAT_ENABLED", heartbeatEnabled.toString())
+            buildConfigField("int", "HEARTBEAT_INTERVAL", heartbeatInterval.toString())
+            buildConfigField("String", "HEARTBEAT_API_URL", "\"$heartbeatApiUrl\"")
+            buildConfigField("String", "HEARTBEAT_API_KEY", "\"$heartbeatApiKey\"")
         }
     }
 

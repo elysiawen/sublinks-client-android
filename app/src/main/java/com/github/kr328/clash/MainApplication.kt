@@ -12,6 +12,9 @@ import coil.disk.DiskCache
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.design.store.UiStore
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import com.github.kr328.clash.common.compat.currentProcessName
 import com.github.kr328.clash.common.log.Log
@@ -25,6 +28,61 @@ import com.github.kr328.clash.design.R as DesignR
 
 @Suppress("unused")
 class MainApplication : Application(), ImageLoaderFactory {
+
+    companion object {
+        private var heartbeatJob: Job? = null
+        private val defaultIntervalMs = BuildConfig.HEARTBEAT_INTERVAL * 1000L
+
+        fun startHeartbeat() {
+            val app = Global.application as? MainApplication ?: return
+            app.startHeartbeatInternal()
+        }
+
+        fun stopHeartbeat() {
+            heartbeatJob?.cancel()
+            heartbeatJob = null
+            Log.d("Heartbeat stopped")
+        }
+    }
+
+    private fun startHeartbeatInternal() {
+        if (!SubLinksService.isLoggedIn(this)) {
+            Log.d("Heartbeat: not logged in, skipping")
+            return
+        }
+        if (!SubLinksService.isHeartbeatEnabled()) {
+            Log.d("Heartbeat: disabled by config, skipping")
+            return
+        }
+
+        if (heartbeatJob?.isActive == true) {
+            Log.d("Heartbeat: already running")
+            return
+        }
+
+        heartbeatJob?.cancel()
+        heartbeatJob = Global.launch {
+            Log.d("Heartbeat started, default interval=${BuildConfig.HEARTBEAT_INTERVAL}s")
+            var intervalMs = defaultIntervalMs
+
+            while (isActive) {
+                try {
+                    val response = SubLinksService.sendHeartbeat(this@MainApplication)
+                    if (response != null && response.success && response.next_heartbeat_interval != null) {
+                        intervalMs = response.next_heartbeat_interval * 1000L
+                    } else {
+                        // Server didn't return interval or request failed, keep using current/default
+                        intervalMs = defaultIntervalMs
+                    }
+                } catch (_: Exception) {
+                    // Network error, reset to default
+                    intervalMs = defaultIntervalMs
+                }
+                delay(intervalMs)
+            }
+        }
+    }
+
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
 
@@ -56,6 +114,11 @@ class MainApplication : Application(), ImageLoaderFactory {
 
         if (processName == packageName) {
             Remote.launch()
+
+            // Start heartbeat if user is already logged in
+            if (SubLinksService.isLoggedIn(this)) {
+                startHeartbeat()
+            }
         } else {
             sendServiceRecreated()
         }

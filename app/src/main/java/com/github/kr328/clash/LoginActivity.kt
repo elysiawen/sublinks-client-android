@@ -354,6 +354,9 @@ class LoginActivity : AppCompatActivity() {
         }
 
         withContext(Dispatchers.Main) {
+            // Start heartbeat after successful login
+            MainApplication.startHeartbeat()
+
             val intent = Intent(this@LoginActivity, MainActivity::class.java)
             intent.putExtra("skip_sync", true)
             startActivity(intent)

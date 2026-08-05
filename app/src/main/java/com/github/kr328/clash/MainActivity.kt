@@ -250,6 +250,8 @@ class MainActivity : BaseActivity<MainDesign>() {
                                              android.widget.Toast.makeText(this@MainActivity, DesignR.string.logging_out, android.widget.Toast.LENGTH_SHORT).show()
                                         }
                                         val (success, message) = SubLinksService.logout(this@MainActivity)
+                                        // Stop heartbeat on logout
+                                        MainApplication.stopHeartbeat()
                                         withContext(Dispatchers.Main) {
                                             if (!message.isNullOrEmpty()) {
                                                 android.widget.Toast.makeText(this@MainActivity, message, android.widget.Toast.LENGTH_SHORT).show()

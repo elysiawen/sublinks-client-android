@@ -33,7 +33,7 @@ object SubLinksService {
     private val USER_AGENT = "SubLinks Client Android/${BuildConfig.VERSION_NAME}"
 
     @androidx.annotation.Keep
-    data class LoginRequest(val username: String, val password: String, val code: String? = null, val deviceInfo: String? = null)
+    data class LoginRequest(val username: String, val password: String, val code: String? = null, val deviceInfo: String? = null, val clientId: String? = null)
     @androidx.annotation.Keep
     data class LoginResponse(val token: String?, val accessToken: String?, val access_token: String?, val refreshToken: String?, val user: Any?, val error: String?, val requires2FA: Boolean? = null, val message: String? = null)
     
@@ -66,6 +66,134 @@ object SubLinksService {
         return prefs.getString(KEY_SERVER, null) ?: BuildConfig.SUBLINKS_API_URL
     }
 
+    // ── Heartbeat ─────────────────────────────────────────────────
+
+    @androidx.annotation.Keep
+    data class HeartbeatRequest(
+        val client_id: String,
+        val client_name: String? = null,
+        val user_id: String? = null,
+        val version: String? = null,
+        val metadata: Map<String, Any>? = null
+    )
+
+    @androidx.annotation.Keep
+    data class HeartbeatResponse(
+        val success: Boolean,
+        val server_time: String? = null,
+        val next_heartbeat_interval: Int? = null
+    )
+
+    fun getUserId(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val userJson = prefs.getString(KEY_USER, null) ?: return null
+        return try {
+            val element = com.google.gson.JsonParser.parseString(userJson)
+            if (element.isJsonObject) {
+                val obj = element.asJsonObject
+                if (obj.has("id") && !obj.get("id").isJsonNull) {
+                    obj.get("id").asString
+                } else if (obj.has("_id") && !obj.get("_id").isJsonNull) {
+                    obj.get("_id").asString
+                } else if (obj.has("userId") && !obj.get("userId").isJsonNull) {
+                    obj.get("userId").asString
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.w("Failed to parse user id", e)
+            null
+        }
+    }
+
+    fun getClientId(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val key = "heartbeat_client_id"
+        val existing = prefs.getString(key, null)
+        if (existing != null) return existing
+
+        val newId = try {
+            android.provider.Settings.Secure.getString(context.contentResolver, android.provider.Settings.Secure.ANDROID_ID)
+                .takeUnless { it.isNullOrBlank() || it == "9774d56d682e549c" }
+                ?: java.util.UUID.randomUUID().toString()
+        } catch (_: Exception) {
+            java.util.UUID.randomUUID().toString()
+        }
+        prefs.edit().putString(key, newId).apply()
+        return newId
+    }
+
+    fun isHeartbeatEnabled(): Boolean {
+        return BuildConfig.HEARTBEAT_ENABLED
+    }
+
+    suspend fun sendHeartbeat(context: Context): HeartbeatResponse? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val apiUrl = BuildConfig.HEARTBEAT_API_URL
+                val apiKey = BuildConfig.HEARTBEAT_API_KEY
+
+                if (apiUrl.isBlank() || apiKey.isBlank()) {
+                    Log.w("Heartbeat: API URL or API Key not configured")
+                    return@withContext null
+                }
+
+                val url = "${apiUrl.trimEnd('/')}/api/v1/heartbeat"
+                val clientId = getClientId(context)
+                val clientName = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
+                val userId = getUserId(context)
+                val version = BuildConfig.VERSION_NAME
+
+                val metadata = mapOf(
+                    "os" to "Android ${android.os.Build.VERSION.RELEASE}",
+                    "username" to (getUsername(context) ?: ""),
+                    "proxy_enabled" to com.github.kr328.clash.remote.Remote.broadcasts.clashRunning
+                )
+
+                val heartbeat = HeartbeatRequest(
+                    client_id = clientId,
+                    client_name = clientName,
+                    user_id = userId,
+                    version = version,
+                    metadata = metadata
+                )
+
+                val json = gson.toJson(heartbeat)
+                val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request = Request.Builder()
+                    .url(url)
+                    .header("X-API-Key", apiKey)
+                    .header("Content-Type", "application/json")
+                    .header("User-Agent", USER_AGENT)
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val responseBody = response.use { it.body?.string() } ?: return@withContext null
+
+                if (!response.isSuccessful) {
+                    Log.w("Heartbeat failed: HTTP ${response.code}: $responseBody")
+                    return@withContext null
+                }
+
+                val heartbeatResponse = gson.fromJson(responseBody, HeartbeatResponse::class.java)
+                if (heartbeatResponse.success) {
+                    Log.d("Heartbeat sent successfully, server_time=${heartbeatResponse.server_time}, interval=${heartbeatResponse.next_heartbeat_interval}")
+                } else {
+                    Log.w("Heartbeat response indicated failure")
+                }
+                heartbeatResponse
+            } catch (e: Exception) {
+                Log.w("Heartbeat send failed", e)
+                null
+            }
+        }
+    }
+
     private fun cleanUrl(url: String): String = url.trim().removeSuffix("/")
 
     suspend fun login(context: Context, serverUrl: String, username: String, password: String, code: String? = null): LoginResult {
@@ -76,7 +204,8 @@ object SubLinksService {
                 val url = "$cleanUrl/api/client/auth/login"
                 
                 val deviceInfo = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})"
-                val json = gson.toJson(LoginRequest(username, password, code, deviceInfo))
+                val clientId = getClientId(context)
+                val json = gson.toJson(LoginRequest(username, password, code, deviceInfo, clientId))
                 val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
                 
                 val request = Request.Builder()
@@ -692,7 +821,7 @@ object SubLinksService {
     // ── Device Code Flow (RFC 8628) ──────────────────────────────
 
     @androidx.annotation.Keep
-    data class DeviceAuthorizeRequest(val deviceInfo: String)
+    data class DeviceAuthorizeRequest(val deviceInfo: String, val clientId: String? = null)
     @androidx.annotation.Keep
     data class DeviceAuthorizeResponse(val deviceCode: String, val verificationUri: String, val expiresIn: Int, val interval: Int)
     @androidx.annotation.Keep
@@ -716,7 +845,8 @@ object SubLinksService {
                 val url = "$cleanUrl/api/client/auth/device/authorize"
 
                 val deviceInfo = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})"
-                val json = gson.toJson(DeviceAuthorizeRequest(deviceInfo))
+                val clientId = getClientId(context)
+                val json = gson.toJson(DeviceAuthorizeRequest(deviceInfo, clientId))
                 val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
 
                 val request = Request.Builder()
